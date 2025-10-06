@@ -1,10 +1,27 @@
-const TaskPriorityOverview = () => {
-  const priorities = [
-    { label: 'High', counts: { done: 10, inProgress: 6, todo: 2 } },
-    { label: 'Medium', counts: { done: 8, inProgress: 9, todo: 4 } },
-    { label: 'Low', counts: { done: 6, inProgress: 5, todo: 7 } },
-  ];
+import type { FC } from 'react';
 
+type PriorityKey = 'done' | 'inProgress' | 'todo';
+
+type PriorityCounts = Record<PriorityKey, number>;
+
+type Priority = {
+  label: string;
+  counts: PriorityCounts;
+};
+
+const priorities: Priority[] = [
+  { label: 'High', counts: { done: 10, inProgress: 6, todo: 2 } },
+  { label: 'Medium', counts: { done: 8, inProgress: 9, todo: 4 } },
+  { label: 'Low', counts: { done: 6, inProgress: 5, todo: 7 } },
+];
+
+const segmentColors: Record<PriorityKey, string> = {
+  done: 'var(--color-success)',
+  inProgress: 'var(--color-info)',
+  todo: 'var(--color-warning)',
+};
+
+const TaskPriorityOverview: FC = () => {
   return (
     <section className="panel">
       <header className="panel__header">
@@ -14,11 +31,11 @@ const TaskPriorityOverview = () => {
         <div className="task-priority__chart" role="img" aria-label="Task priority bar chart">
           {priorities.map((priority) => {
             const total = priority.counts.done + priority.counts.inProgress + priority.counts.todo;
-            const segments = [
-              { key: 'done', value: priority.counts.done, color: 'var(--color-success)' },
-              { key: 'inProgress', value: priority.counts.inProgress, color: 'var(--color-info)' },
-              { key: 'todo', value: priority.counts.todo, color: 'var(--color-warning)' },
-            ];
+            const segments = (Object.keys(priority.counts) as PriorityKey[]).map((key) => ({
+              key,
+              value: priority.counts[key],
+              color: segmentColors[key],
+            }));
 
             return (
               <div key={priority.label} className="task-priority__column">
@@ -42,13 +59,13 @@ const TaskPriorityOverview = () => {
         </div>
         <div className="task-priority__legend">
           <p>
-            <span className="legend-dot" style={{ backgroundColor: 'var(--color-success)' }} /> Done
+            <span className="legend-dot" style={{ backgroundColor: segmentColors.done }} /> Done
           </p>
           <p>
-            <span className="legend-dot" style={{ backgroundColor: 'var(--color-info)' }} /> In Progress
+            <span className="legend-dot" style={{ backgroundColor: segmentColors.inProgress }} /> In Progress
           </p>
           <p>
-            <span className="legend-dot" style={{ backgroundColor: 'var(--color-warning)' }} /> To-Do
+            <span className="legend-dot" style={{ backgroundColor: segmentColors.todo }} /> To-Do
           </p>
         </div>
       </div>

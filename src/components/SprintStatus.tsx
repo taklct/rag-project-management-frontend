@@ -1,10 +1,18 @@
-const SprintStatus = () => {
-  const segments = [
-    { label: 'Done', percentage: 63, color: 'var(--color-success)' },
-    { label: 'To-Do', percentage: 25, color: 'var(--color-warning)' },
-    { label: 'In Progress', percentage: 12, color: 'var(--color-info)' },
-  ];
+import type { FC } from 'react';
 
+type SprintSegment = {
+  label: string;
+  percentage: number;
+  color: string;
+};
+
+const segments: SprintSegment[] = [
+  { label: 'Done', percentage: 63, color: 'var(--color-success)' },
+  { label: 'To-Do', percentage: 25, color: 'var(--color-warning)' },
+  { label: 'In Progress', percentage: 12, color: 'var(--color-info)' },
+];
+
+const SprintStatus: FC = () => {
   return (
     <section className="panel">
       <header className="panel__header">

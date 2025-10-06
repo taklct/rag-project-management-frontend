@@ -1,19 +1,19 @@
 import './App.css';
 import DashboardHeader from './components/DashboardHeader';
-import StatsCard from './components/StatsCard';
+import StatsCard, { type StatsCardProps } from './components/StatsCard';
 import SprintStatus from './components/SprintStatus';
 import TaskPriorityOverview from './components/TaskPriorityOverview';
 import TeamProgress from './components/TeamProgress';
 import AssistantPanel from './components/AssistantPanel';
 
-const stats = [
+const stats: StatsCardProps[] = [
   { icon: '✅', title: 'Completed Today', value: 12, subtitle: 'Logged today', variant: 'success' },
-  { icon: '🔁', title: 'Updated Today', value: 8, subtitle: 'Tasks updated', variant: 'default' },
+  { icon: '🔁', title: 'Updated Today', value: 8, subtitle: 'Tasks updated' },
   { icon: '🆕', title: 'Created Today', value: 5, subtitle: 'New tasks added', variant: 'info' },
   { icon: '⚠️', title: 'Overdue', value: 3, subtitle: 'Needs attention', variant: 'danger' },
 ];
 
-function App() {
+function App(): JSX.Element {
   return (
     <div className="dashboard">
       <DashboardHeader />

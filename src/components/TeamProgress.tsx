@@ -1,11 +1,19 @@
-const teams = [
+import type { FC } from 'react';
+
+type TeamProgressEntry = {
+  name: string;
+  points: number;
+  total: number;
+};
+
+const teams: TeamProgressEntry[] = [
   { name: 'Backend', points: 40, total: 50 },
   { name: 'Frontend', points: 34, total: 40 },
   { name: 'QA', points: 18, total: 25 },
   { name: 'DevOps', points: 12, total: 20 },
 ];
 
-const TeamProgress = () => {
+const TeamProgress: FC = () => {
   return (
     <section className="panel">
       <header className="panel__header">

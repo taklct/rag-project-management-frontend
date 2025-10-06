@@ -1,4 +1,16 @@
-const StatsCard = ({ icon, title, value, subtitle, variant = 'default' }) => {
+import type { FC, ReactNode } from 'react';
+
+export type StatsCardVariant = 'default' | 'success' | 'info' | 'danger';
+
+export interface StatsCardProps {
+  icon: ReactNode;
+  title: string;
+  value: number | string;
+  subtitle?: string;
+  variant?: StatsCardVariant;
+}
+
+const StatsCard: FC<StatsCardProps> = ({ icon, title, value, subtitle, variant = 'default' }) => {
   return (
     <div className={`stats-card stats-card--${variant}`}>
       <div className="stats-card__icon" aria-hidden="true">

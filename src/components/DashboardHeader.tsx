@@ -1,4 +1,6 @@
-const DashboardHeader = () => {
+import type { FC } from 'react';
+
+const DashboardHeader: FC = () => {
   return (
     <header className="dashboard-header">
       <div className="dashboard-header__title">

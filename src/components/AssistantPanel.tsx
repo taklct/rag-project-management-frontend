@@ -1,4 +1,6 @@
-const AssistantPanel = () => {
+import type { FC } from 'react';
+
+const AssistantPanel: FC = () => {
   return (
     <section className="panel assistant-panel">
       <header className="panel__header">

@@ -1,28 +1,36 @@
-import { useState } from 'react';
-import reactLogo from './assets/react.svg';
 import './App.css';
+import DashboardHeader from './components/DashboardHeader';
+import StatsCard from './components/StatsCard';
+import SprintStatus from './components/SprintStatus';
+import TaskPriorityOverview from './components/TaskPriorityOverview';
+import TeamProgress from './components/TeamProgress';
+import AssistantPanel from './components/AssistantPanel';
+
+const stats = [
+  { icon: '✅', title: 'Completed Today', value: 12, subtitle: 'Logged today', variant: 'success' },
+  { icon: '🔁', title: 'Updated Today', value: 8, subtitle: 'Tasks updated', variant: 'default' },
+  { icon: '🆕', title: 'Created Today', value: 5, subtitle: 'New tasks added', variant: 'info' },
+  { icon: '⚠️', title: 'Overdue', value: 3, subtitle: 'Needs attention', variant: 'danger' },
+];
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <div className="app">
-      <header className="app__header">
-        <img src={reactLogo} className="logo" alt="React logo" />
-        <h1>RAG Project Management</h1>
-        <p className="app__subtitle">
-          Kick-start your Retrieval Augmented Generation project management UI with React and Vite.
-        </p>
-      </header>
-
-      <main className="app__main">
-        <p>The counter below confirms that state management is working:</p>
-        <div className="app__counter">
-          <button type="button" onClick={() => setCount((value) => value + 1)}>
-            count is {count}
-          </button>
-        </div>
-        <p>Edit <code>src/App.jsx</code> and save to test hot module replacement.</p>
+    <div className="dashboard">
+      <DashboardHeader />
+      <main className="dashboard__layout">
+        <section className="stats-grid">
+          {stats.map((stat) => (
+            <StatsCard key={stat.title} {...stat} />
+          ))}
+        </section>
+        <section className="dashboard__content">
+          <div className="dashboard__main-panels">
+            <SprintStatus />
+            <TaskPriorityOverview />
+            <TeamProgress />
+          </div>
+          <AssistantPanel />
+        </section>
       </main>
     </div>
   );

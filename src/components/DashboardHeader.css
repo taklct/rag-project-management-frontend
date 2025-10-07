@@ -1,0 +1,53 @@
+.dashboard-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dashboard-header__title {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.dashboard-header__filters {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.dashboard-header select {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  background: #fff;
+  color: inherit;
+}
+
+.header-button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.65rem 1.4rem;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  transition: background 150ms ease-in-out, transform 150ms ease-in-out;
+}
+
+.header-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}

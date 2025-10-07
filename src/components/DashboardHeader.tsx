@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import './DashboardHeader.css';
 
 const DashboardHeader: FC = () => {
   return (

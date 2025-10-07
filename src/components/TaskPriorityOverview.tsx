@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import './TaskPriorityOverview.css';
 
 type PriorityKey = 'done' | 'inProgress' | 'todo';
 

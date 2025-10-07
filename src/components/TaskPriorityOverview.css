@@ -1,0 +1,58 @@
+.task-priority {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.task-priority__chart {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-end;
+}
+
+.task-priority__column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.task-priority__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+  height: 180px;
+  width: 70px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.06) 0%, rgba(15, 23, 42, 0.02) 100%);
+  border-radius: 18px;
+  padding: 0.75rem 0.5rem;
+}
+
+.task-priority__bar {
+  flex: 1;
+  width: 16px;
+  border-radius: 999px;
+  position: relative;
+  overflow: hidden;
+}
+
+.task-priority__label {
+  margin: 0;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.task-priority__legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+.task-priority__legend p {
+  margin: 0;
+  display: flex;
+  align-items: center;
+}

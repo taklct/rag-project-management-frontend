@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import './TeamProgress.css';
 
 type TeamProgressEntry = {
   name: string;

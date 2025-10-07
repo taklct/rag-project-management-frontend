@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        window.FontAwesomeConfig = { autoReplaceSvg: 'nest' };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/project_dashboard.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'atlassian-blue': '#0052CC',
+                        'atlassian-light': '#E9F2FF',
+                        'atlassian-gray': '#6B778C',
+                        'atlassian-green': '#00875A',
+                        'atlassian-orange': '#FF8B00',
+                        'atlassian-red': '#DE350B'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div id="header" class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-semibold text-gray-900">Project Dashboard</h1>
+                <div id="project-selector" class="ml-8">
+                    <label class="text-sm font-medium text-gray-700 mr-3" for="project-select">Project:</label>
+                    <select id="project-select" class="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-atlassian-blue focus:border-transparent">
+                        <option>E-Commerce Platform</option>
+                        <option>Mobile App</option>
+                        <option>Analytics Dashboard</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <i class="fa-regular fa-bell text-gray-500"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex h-[calc(100vh-80px)]">
+        <div id="main-dashboard" class="flex-1 p-6 overflow-y-auto">
+            <div id="summary-cards" class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4">
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-atlassian-green bg-opacity-10 rounded-lg flex items-center justify-center">
+                                <i class="fa-solid fa-check text-atlassian-green text-lg"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-2xl font-bold text-gray-900">12</p>
+                            <p class="text-sm text-gray-600">Completed Today</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-atlassian-blue bg-opacity-10 rounded-lg flex items-center justify-center">
+                                <i class="fa-solid fa-arrows-rotate text-atlassian-blue text-lg"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-2xl font-bold text-gray-900">8</p>
+                            <p class="text-sm text-gray-600">Updated Today</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-atlassian-orange bg-opacity-10 rounded-lg flex items-center justify-center">
+                                <i class="fa-solid fa-plus text-atlassian-orange text-lg"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-2xl font-bold text-gray-900">5</p>
+                            <p class="text-sm text-gray-600">Created Today</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-atlassian-red bg-opacity-10 rounded-lg flex items-center justify-center">
+                                <i class="fa-solid fa-clock text-atlassian-red text-lg"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-2xl font-bold text-gray-900">3</p>
+                            <p class="text-sm text-gray-600">Overdue</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-8 mb-8 xl:grid-cols-2">
+                <div id="sprint-status-chart" class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6">Sprint Task Status</h3>
+                    <div id="donut-chart" class="h-80"></div>
+                </div>
+
+                <div id="priority-breakdown-chart" class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6">Task Priority Overview</h3>
+                    <div id="bar-chart" class="h-80"></div>
+                </div>
+            </div>
+
+            <div id="team-progress-section" class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">Team Progress</h3>
+                <div class="space-y-6">
+                    <div class="flex items-center">
+                        <div class="flex items-center w-40">
+                            <span class="font-medium text-gray-900">Backend</span>
+                        </div>
+                        <div class="flex-1 mx-6">
+                            <div class="bg-gray-200 rounded-full h-4">
+                                <div class="bg-green-500 h-4 rounded-full" style="width: 67%"></div>
+                            </div>
+                        </div>
+                        <span class="text-sm text-gray-600 w-20 text-right">40/60 SP</span>
+                    </div>
+
+                    <div class="flex items-center">
+                        <div class="flex items-center w-40">
+                            <span class="font-medium text-gray-900">Frontend</span>
+                        </div>
+                        <div class="flex-1 mx-6">
+                            <div class="bg-gray-200 rounded-full h-4">
+                                <div class="bg-green-500 h-4 rounded-full" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        <span class="text-sm text-gray-600 w-20 text-right">34/40 SP</span>
+                    </div>
+
+                    <div class="flex items-center">
+                        <div class="flex items-center w-40">
+                            <span class="font-medium text-gray-900">QA</span>
+                        </div>
+                        <div class="flex-1 mx-6">
+                            <div class="bg-gray-200 rounded-full h-4">
+                                <div class="bg-green-500 h-4 rounded-full" style="width: 45%"></div>
+                            </div>
+                        </div>
+                        <span class="text-sm text-gray-600 w-20 text-right">18/40 SP</span>
+                    </div>
+
+                    <div class="flex items-center">
+                        <div class="flex items-center w-40">
+                            <span class="font-medium text-gray-900">DevOps</span>
+                        </div>
+                        <div class="flex-1 mx-6">
+                            <div class="bg-gray-200 rounded-full h-4">
+                                <div class="bg-green-500 h-4 rounded-full" style="width: 75%"></div>
+                            </div>
+                        </div>
+                        <span class="text-sm text-gray-600 w-20 text-right">15/20 SP</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="chatbox-panel" class="w-full bg-white border-l border-gray-200 flex flex-col lg:w-96">
+            <div class="p-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fa-solid fa-robot mr-2 text-atlassian-blue"></i>
+                    AI Assistant
+                </h3>
+            </div>
+
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4">
+                <div class="flex">
+                    <div class="bg-atlassian-light rounded-lg p-3 max-w-xs">
+                        <p class="text-sm text-gray-800">Hello! I'm here to help you with your project management tasks. What would you like to know?</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <div class="bg-atlassian-blue text-white rounded-lg p-3 max-w-xs">
+                        <p class="text-sm">Can you show me the status of our current sprint?</p>
+                    </div>
+                </div>
+
+                <div class="flex">
+                    <div class="bg-atlassian-light rounded-lg p-3 max-w-xs">
+                        <p class="text-sm text-gray-800">Based on the current data, your sprint has 45% tasks completed, 30% in progress, and 25% still to do. The backend team is slightly behind schedule.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex items-center space-x-2">
+                    <input type="text" placeholder="Type a message..." class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-atlassian-blue focus:border-transparent">
+                    <button class="bg-atlassian-blue text-white p-2 rounded-lg hover:bg-blue-700 transition-colors" type="button">
+                        <i class="fa-solid fa-paper-plane text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        Highcharts.chart('donut-chart', {
+            chart: { type: 'pie' },
+            credits: { enabled: false },
+            title: { text: null },
+            plotOptions: {
+                pie: {
+                    innerSize: '50%',
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.name}: {point.percentage:.1f}%',
+                        style: {
+                            fontWeight: 'bold',
+                            fontSize: '12px'
+                        }
+                    }
+                }
+            },
+            colors: ['#6B7280', '#F59E0B', '#10B981'],
+            series: [{
+                name: 'Tasks',
+                data: [
+                    { name: 'To Do', y: 25 },
+                    { name: 'In Progress', y: 30 },
+                    { name: 'Done', y: 45 }
+                ]
+            }]
+        });
+
+        Highcharts.chart('bar-chart', {
+            chart: { type: 'column' },
+            credits: { enabled: false },
+            title: { text: null },
+            xAxis: {
+                categories: ['High', 'Medium', 'Low'],
+                labels: {
+                    style: {
+                        fontWeight: 'bold'
+                    }
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'Tasks',
+                    style: {
+                        fontWeight: 'bold'
+                    }
+                }
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'normal',
+                    borderWidth: 1,
+                    borderColor: '#ffffff'
+                }
+            },
+            colors: ['#6B7280', '#F59E0B', '#10B981'],
+            series: [{
+                name: 'To Do',
+                data: [8, 12, 5]
+            }, {
+                name: 'In Progress',
+                data: [4, 8, 3]
+            }, {
+                name: 'Done',
+                data: [6, 15, 7]
+            }]
+        });
+    </script>
+</body>
+</html>

@@ -1,240 +1,290 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Project Dashboard</title>
-    <link rel="stylesheet" href="./css/index.css" />
-    <link rel="stylesheet" href="./css/project_dashboard.css" />
-    <link rel="stylesheet" href="./css/DashboardHeader.css" />
-    <link rel="stylesheet" href="./css/StatsCard.css" />
-    <link rel="stylesheet" href="./css/SprintStatus.css" />
-    <link rel="stylesheet" href="./css/TaskPriorityOverview.css" />
-    <link rel="stylesheet" href="./css/TeamProgress.css" />
-    <link rel="stylesheet" href="./css/AssistantPanel.css" />
-  </head>
-  <body>
-    <div class="project-dashboard">
-      <header class="dashboard-header">
-        <div class="dashboard-header__title">
-          <h1>Project Dashboard</h1>
-          <div class="dashboard-header__filters">
-            <label class="visually-hidden" for="project">Select project</label>
-            <select id="project" name="project">
-              <option selected>E-Commerce Platform</option>
-              <option>Mobile Banking</option>
-              <option>AI Assistant</option>
-            </select>
-          </div>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none;}
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'atlassian-blue': '#0052CC',
+                        'atlassian-light': '#E9F2FF',
+                        'atlassian-gray': '#6B778C',
+                        'atlassian-green': '#00875A',
+                        'atlassian-orange': '#FF8B00',
+                        'atlassian-red': '#DE350B'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    
+    <div id="header" class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-semibold text-gray-900">Project Dashboard</h1>
+                <div id="project-selector" class="ml-8">
+                    <label class="text-sm font-medium text-gray-700 mr-3">Project:</label>
+                    <select class="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-atlassian-blue focus:border-transparent">
+                        <option>E-Commerce Platform</option>
+                        <option>Mobile App</option>
+                        <option>Analytics Dashboard</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <i class="fa-regular fa-bell text-gray-500"></i>
+            </div>
         </div>
-        <button class="header-button" type="button">
-          <span aria-hidden="true">➕</span>
-          New Task
-        </button>
-      </header>
-      <main class="project-dashboard__layout">
-        <section class="project-dashboard__stats" aria-label="Project statistics summary">
-          <div class="stats-card stats-card--success">
-            <div aria-hidden="true" class="stats-card__icon">✅</div>
-            <div class="stats-card__content">
-              <p class="stats-card__title">Completed Today</p>
-              <p class="stats-card__value">12</p>
-              <p class="stats-card__subtitle">Logged today</p>
-            </div>
-          </div>
-          <div class="stats-card stats-card--default">
-            <div aria-hidden="true" class="stats-card__icon">🔁</div>
-            <div class="stats-card__content">
-              <p class="stats-card__title">Updated Today</p>
-              <p class="stats-card__value">8</p>
-              <p class="stats-card__subtitle">Tasks updated</p>
-            </div>
-          </div>
-          <div class="stats-card stats-card--info">
-            <div aria-hidden="true" class="stats-card__icon">🆕</div>
-            <div class="stats-card__content">
-              <p class="stats-card__title">Created Today</p>
-              <p class="stats-card__value">5</p>
-              <p class="stats-card__subtitle">New tasks added</p>
-            </div>
-          </div>
-          <div class="stats-card stats-card--danger">
-            <div aria-hidden="true" class="stats-card__icon">⚠️</div>
-            <div class="stats-card__content">
-              <p class="stats-card__title">Overdue</p>
-              <p class="stats-card__value">3</p>
-              <p class="stats-card__subtitle">Needs attention</p>
-            </div>
-          </div>
-        </section>
-        <section class="project-dashboard__content">
-          <div class="project-dashboard__main">
-            <section class="panel">
-              <header class="panel__header">
-                <h2>Sprint Task Status</h2>
-              </header>
-              <div class="sprint-status">
-                <div aria-hidden="true" class="sprint-status__chart">
-                  <div class="sprint-status__donut">
-                    <div class="sprint-status__donut-hole"></div>
-                  </div>
-                </div>
-                <ul class="sprint-status__legend">
-                  <li>
-                    <span class="legend-dot" style="background-color: var(--color-success);"></span>
-                    <div>
-                      <p class="legend-label">Done</p>
-                      <p class="legend-value">63%</p>
-                    </div>
-                  </li>
-                  <li>
-                    <span class="legend-dot" style="background-color: var(--color-warning);"></span>
-                    <div>
-                      <p class="legend-label">To-Do</p>
-                      <p class="legend-value">25%</p>
-                    </div>
-                  </li>
-                  <li>
-                    <span class="legend-dot" style="background-color: var(--color-info);"></span>
-                    <div>
-                      <p class="legend-label">In Progress</p>
-                      <p class="legend-value">12%</p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            </section>
-            <section class="panel">
-              <header class="panel__header">
-                <h2>Task Priority Overview</h2>
-              </header>
-              <div class="task-priority">
-                <div aria-label="Task priority bar chart" class="task-priority__chart" role="img">
-                  <div class="task-priority__column">
-                    <div class="task-priority__bars">
-                      <div class="task-priority__bar task-priority__bar--done" style="height: 55.6%; background-color: var(--color-success);">
-                        <span class="visually-hidden">10 done tasks</span>
-                      </div>
-                      <div class="task-priority__bar task-priority__bar--inProgress" style="height: 33.3%; background-color: var(--color-info);">
-                        <span class="visually-hidden">6 in-progress tasks</span>
-                      </div>
-                      <div class="task-priority__bar task-priority__bar--todo" style="height: 11.1%; background-color: var(--color-warning);">
-                        <span class="visually-hidden">2 to-do tasks</span>
-                      </div>
-                    </div>
-                    <p class="task-priority__label">High</p>
-                  </div>
-                  <div class="task-priority__column">
-                    <div class="task-priority__bars">
-                      <div class="task-priority__bar task-priority__bar--done" style="height: 38.1%; background-color: var(--color-success);">
-                        <span class="visually-hidden">8 done tasks</span>
-                      </div>
-                      <div class="task-priority__bar task-priority__bar--inProgress" style="height: 42.9%; background-color: var(--color-info);">
-                        <span class="visually-hidden">9 in-progress tasks</span>
-                      </div>
-                      <div class="task-priority__bar task-priority__bar--todo" style="height: 19%; background-color: var(--color-warning);">
-                        <span class="visually-hidden">4 to-do tasks</span>
-                      </div>
-                    </div>
-                    <p class="task-priority__label">Medium</p>
-                  </div>
-                  <div class="task-priority__column">
-                    <div class="task-priority__bars">
-                      <div class="task-priority__bar task-priority__bar--done" style="height: 33.3%; background-color: var(--color-success);">
-                        <span class="visually-hidden">6 done tasks</span>
-                      </div>
-                      <div class="task-priority__bar task-priority__bar--inProgress" style="height: 27.8%; background-color: var(--color-info);">
-                        <span class="visually-hidden">5 in-progress tasks</span>
-                      </div>
-                      <div class="task-priority__bar task-priority__bar--todo" style="height: 38.9%; background-color: var(--color-warning);">
-                        <span class="visually-hidden">7 to-do tasks</span>
-                      </div>
-                    </div>
-                    <p class="task-priority__label">Low</p>
-                  </div>
-                </div>
-                <div class="task-priority__legend">
-                  <p><span class="legend-dot" style="background-color: var(--color-success);"></span> Done</p>
-                  <p><span class="legend-dot" style="background-color: var(--color-info);"></span> In Progress</p>
-                  <p><span class="legend-dot" style="background-color: var(--color-warning);"></span> To-Do</p>
-                </div>
-              </div>
-            </section>
-            <section class="panel">
-              <header class="panel__header">
-                <h2>Team Progress</h2>
-              </header>
-              <ul class="team-progress">
-                <li class="team-progress__item">
-                  <div class="team-progress__info">
-                    <p class="team-progress__name">Backend</p>
-                    <p class="team-progress__value">40/50 SP</p>
-                  </div>
-                  <div class="team-progress__bar">
-                    <div class="team-progress__fill" style="width: 80%;"></div>
-                  </div>
-                </li>
-                <li class="team-progress__item">
-                  <div class="team-progress__info">
-                    <p class="team-progress__name">Frontend</p>
-                    <p class="team-progress__value">34/40 SP</p>
-                  </div>
-                  <div class="team-progress__bar">
-                    <div class="team-progress__fill" style="width: 85%;"></div>
-                  </div>
-                </li>
-                <li class="team-progress__item">
-                  <div class="team-progress__info">
-                    <p class="team-progress__name">QA</p>
-                    <p class="team-progress__value">18/25 SP</p>
-                  </div>
-                  <div class="team-progress__bar">
-                    <div class="team-progress__fill" style="width: 72%;"></div>
-                  </div>
-                </li>
-                <li class="team-progress__item">
-                  <div class="team-progress__info">
-                    <p class="team-progress__name">DevOps</p>
-                    <p class="team-progress__value">12/20 SP</p>
-                  </div>
-                  <div class="team-progress__bar">
-                    <div class="team-progress__fill" style="width: 60%;"></div>
-                  </div>
-                </li>
-              </ul>
-            </section>
-          </div>
-          <section class="panel assistant-panel">
-            <header class="panel__header">
-              <div class="assistant-panel__title">
-                <span aria-hidden="true" class="assistant-panel__badge">🤖</span>
-                <h2>AI Assistant</h2>
-              </div>
-            </header>
-            <div class="assistant-panel__conversation">
-              <div aria-live="polite" class="assistant-message">
-                <p class="assistant-message__meta">Hello! I'm here to help you with your project management tasks.</p>
-                <p class="assistant-message__bubble">
-                  Hello! I'm here to help you with your project management tasks. Ask me anything about your sprint!
-                </p>
-              </div>
-              <div class="user-message">
-                <p class="user-message__bubble">Can you show me the status of our current sprint?</p>
-              </div>
-              <div aria-live="polite" class="assistant-message">
-                <p class="assistant-message__bubble">
-                  Based on the current sprint, 63% of tasks are done, 12% in progress, and 25% still to do. The backlog is
-                  slightly behind schedule.
-                </p>
-              </div>
-            </div>
-            <form aria-label="Send a message to the AI assistant" class="assistant-panel__input">
-              <input placeholder="Ask a question..." type="text" />
-              <button type="submit">Send</button>
-            </form>
-          </section>
-        </section>
-      </main>
     </div>
-  </body>
+
+    <div class="flex h-[calc(100vh-80px)]">
+        <div id="main-dashboard" class="flex-1 p-6 overflow-y-auto">
+            
+            <div id="summary-cards" class="grid grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-atlassian-green bg-opacity-10 rounded-lg flex items-center justify-center">
+                                <i class="fa-solid fa-check text-atlassian-green text-lg"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-2xl font-bold text-gray-900">12</p>
+                            <p class="text-sm text-gray-600">Completed Today</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-atlassian-blue bg-opacity-10 rounded-lg flex items-center justify-center">
+                                <i class="fa-solid fa-arrows-rotate text-atlassian-blue text-lg"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-2xl font-bold text-gray-900">8</p>
+                            <p class="text-sm text-gray-600">Updated Today</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-atlassian-orange bg-opacity-10 rounded-lg flex items-center justify-center">
+                                <i class="fa-solid fa-plus text-atlassian-orange text-lg"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-2xl font-bold text-gray-900">5</p>
+                            <p class="text-sm text-gray-600">Created Today</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-atlassian-red bg-opacity-10 rounded-lg flex items-center justify-center">
+                                <i class="fa-solid fa-clock text-atlassian-red text-lg"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-2xl font-bold text-gray-900">3</p>
+                            <p class="text-sm text-gray-600">Overdue</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-8 mb-8">
+                <div id="sprint-status-chart" class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6">Sprint Task Status</h3>
+                    <div id="donut-chart" class="h-80"></div>
+                </div>
+
+                <div id="priority-breakdown-chart" class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6">Task Priority Overview</h3>
+                    <div id="bar-chart" class="h-80"></div>
+                </div>
+            </div>
+
+            <div id="team-progress-section" class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">Team Progress</h3>
+                <div class="space-y-6">
+                    <div class="flex items-center">
+                        <div class="flex items-center w-40">
+                            <span class="font-medium text-gray-900">Backend</span>
+                        </div>
+                        <div class="flex-1 mx-6">
+                            <div class="bg-gray-200 rounded-full h-4">
+                                <div class="bg-green-500 h-4 rounded-full" style="width: 67%"></div>
+                            </div>
+                        </div>
+                        <span class="text-sm text-gray-600 w-20 text-right">40/60 SP</span>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <div class="flex items-center w-40">
+                            <span class="font-medium text-gray-900">Frontend</span>
+                        </div>
+                        <div class="flex-1 mx-6">
+                            <div class="bg-gray-200 rounded-full h-4">
+                                <div class="bg-green-500 h-4 rounded-full" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        <span class="text-sm text-gray-600 w-20 text-right">34/40 SP</span>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <div class="flex items-center w-40">
+                            <span class="font-medium text-gray-900">QA</span>
+                        </div>
+                        <div class="flex-1 mx-6">
+                            <div class="bg-gray-200 rounded-full h-4">
+                                <div class="bg-green-500 h-4 rounded-full" style="width: 45%"></div>
+                            </div>
+                        </div>
+                        <span class="text-sm text-gray-600 w-20 text-right">18/40 SP</span>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <div class="flex items-center w-40">
+                            <span class="font-medium text-gray-900">DevOps</span>
+                        </div>
+                        <div class="flex-1 mx-6">
+                            <div class="bg-gray-200 rounded-full h-4">
+                                <div class="bg-green-500 h-4 rounded-full" style="width: 75%"></div>
+                            </div>
+                        </div>
+                        <span class="text-sm text-gray-600 w-20 text-right">15/20 SP</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="chatbox-panel" class="w-96 bg-white border-l border-gray-200 flex flex-col">
+            <div class="p-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fa-solid fa-robot mr-2 text-atlassian-blue"></i>
+                    AI Assistant
+                </h3>
+            </div>
+            
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4">
+                <div class="flex">
+                    <div class="bg-atlassian-light rounded-lg p-3 max-w-xs">
+                        <p class="text-sm text-gray-800">Hello! I'm here to help you with your project management tasks. What would you like to know?</p>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end">
+                    <div class="bg-atlassian-blue text-white rounded-lg p-3 max-w-xs">
+                        <p class="text-sm">Can you show me the status of our current sprint?</p>
+                    </div>
+                </div>
+                
+                <div class="flex">
+                    <div class="bg-atlassian-light rounded-lg p-3 max-w-xs">
+                        <p class="text-sm text-gray-800">Based on the current data, your sprint has 45% tasks completed, 30% in progress, and 25% still to do. The backend team is slightly behind schedule.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex items-center space-x-2">
+                    <input type="text" placeholder="Type a message..." class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-atlassian-blue focus:border-transparent">
+                    <button class="bg-atlassian-blue text-white p-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fa-solid fa-paper-plane text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        Highcharts.chart('donut-chart', {
+            chart: { type: 'pie' },
+            credits: { enabled: false },
+            title: { text: null },
+            plotOptions: {
+                pie: {
+                    innerSize: '50%',
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.name}: {point.percentage:.1f}%',
+                        style: {
+                            fontWeight: 'bold',
+                            fontSize: '12px'
+                        }
+                    }
+                }
+            },
+            colors: ['#6B7280', '#F59E0B', '#10B981'],
+            series: [{
+                name: 'Tasks',
+                data: [
+                    { name: 'To Do', y: 25 },
+                    { name: 'In Progress', y: 30 },
+                    { name: 'Done', y: 45 }
+                ]
+            }]
+        });
+
+        Highcharts.chart('bar-chart', {
+            chart: { type: 'column' },
+            credits: { enabled: false },
+            title: { text: null },
+            xAxis: {
+                categories: ['High', 'Medium', 'Low'],
+                labels: {
+                    style: {
+                        fontWeight: 'bold'
+                    }
+                }
+            },
+            yAxis: {
+                title: { 
+                    text: 'Tasks',
+                    style: {
+                        fontWeight: 'bold'
+                    }
+                }
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'normal',
+                    borderWidth: 1,
+                    borderColor: '#ffffff'
+                }
+            },
+            colors: ['#6B7280', '#F59E0B', '#10B981'],
+            series: [{
+                name: 'To Do',
+                data: [8, 12, 5]
+            }, {
+                name: 'In Progress',
+                data: [4, 8, 3]
+            }, {
+                name: 'Done',
+                data: [6, 15, 7]
+            }]
+        });
+    </script>
+</body>
 </html>

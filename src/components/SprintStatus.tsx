@@ -1,4 +1,4 @@
-import { type CSSProperties, type FC, useEffect, useMemo, useState } from 'react';
+import { type FC, useCallback, useEffect, useMemo, useState } from 'react';
 import '../css/SprintStatus.css';
 
 export type SprintSegment = {
@@ -11,8 +11,20 @@ export interface SprintStatusProps {
   segments: SprintSegment[];
 }
 
+type EnhancedSegment = SprintSegment & {
+  value: number;
+  ratio: number;
+  dashLength: number;
+  dashOffset: number;
+  displayValue: number;
+};
+
+const RADIUS = 68;
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
 const SprintStatus: FC<SprintStatusProps> = ({ segments }) => {
   const [isAnimated, setIsAnimated] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   useEffect(() => {
     setIsAnimated(false);
@@ -25,34 +37,80 @@ const SprintStatus: FC<SprintStatusProps> = ({ segments }) => {
     };
   }, [segments]);
 
-  const donutStyle = useMemo(() => {
-    if (segments.length === 0) {
+  const enhancedSegments = useMemo(() => {
+    const safeSegments = segments.map((segment) => {
+      const safeValue = Number.isFinite(segment.percentage)
+        ? Math.max(segment.percentage, 0)
+        : 0;
+
       return {
-        backgroundImage: 'conic-gradient(var(--color-info) 0deg 360deg)',
-      } satisfies CSSProperties;
-    }
-
-    const total = segments.reduce((sum, segment) => sum + Math.max(segment.percentage, 0), 0);
-    const denominator = total > 0 ? total : 1;
-
-    let cumulative = 0;
-    const style: (CSSProperties & Record<string, string | number>) = {};
-    const stops: string[] = [];
-
-    segments.forEach((segment, index) => {
-      const safeValue = Math.max(segment.percentage, 0);
-      const share = (safeValue / denominator) * 360;
-      const start = cumulative;
-      cumulative += share;
-      style[`--segment-${index}-start` as string] = `${start}deg`;
-      style[`--segment-${index}-end` as string] = `${cumulative}deg`;
-      style[`--segment-${index}-color` as string] = segment.color;
-      stops.push(`var(--segment-${index}-color) calc(var(--segment-${index}-start) * var(--progress)) calc(var(--segment-${index}-end) * var(--progress))`);
+        ...segment,
+        value: safeValue,
+        displayValue: Math.round(safeValue),
+      } satisfies Omit<EnhancedSegment, 'ratio' | 'dashLength' | 'dashOffset'>;
     });
 
-    style.backgroundImage = `conic-gradient(${stops.join(', ')})`;
-    return style;
+    const total = safeSegments.reduce((sum, segment) => sum + segment.value, 0);
+
+    if (total <= 0) {
+      return [
+        {
+          label: 'No Data',
+          color: 'var(--color-info)',
+          percentage: 0,
+          value: 1,
+          ratio: 1,
+          dashLength: CIRCUMFERENCE,
+          dashOffset: 0,
+          displayValue: 0,
+        },
+      ] satisfies EnhancedSegment[];
+    }
+
+    let cumulativeRatio = 0;
+
+    return safeSegments.map((segment) => {
+      const ratio = segment.value / total;
+      const dashLength = ratio * CIRCUMFERENCE;
+      const dashOffset = cumulativeRatio * CIRCUMFERENCE;
+      cumulativeRatio += ratio;
+
+      return {
+        ...segment,
+        ratio,
+        dashLength,
+        dashOffset,
+      } satisfies EnhancedSegment;
+    });
   }, [segments]);
+
+  const defaultIndex = useMemo(() => {
+    if (enhancedSegments.length === 0) {
+      return null;
+    }
+
+    let index = 0;
+    let maxValue = enhancedSegments[0]?.value ?? 0;
+
+    enhancedSegments.forEach((segment, currentIndex) => {
+      if (segment.value > maxValue) {
+        maxValue = segment.value;
+        index = currentIndex;
+      }
+    });
+
+    return index;
+  }, [enhancedSegments]);
+
+  const activeIndex = hoveredIndex ?? defaultIndex;
+  const activeSegment =
+    activeIndex !== null && activeIndex !== undefined
+      ? enhancedSegments[activeIndex]
+      : undefined;
+
+  const handleHover = useCallback((index: number | null) => {
+    setHoveredIndex(index);
+  }, []);
 
   return (
     <section className="panel">
@@ -60,22 +118,71 @@ const SprintStatus: FC<SprintStatusProps> = ({ segments }) => {
         <h2>Sprint Task Status</h2>
       </header>
       <div className="sprint-status">
-        <div className="sprint-status__chart" aria-hidden="true">
-          <div
-            className={`sprint-status__donut ${isAnimated ? 'is-animated' : ''}`}
-            style={donutStyle}
+        <div
+          className="sprint-status__chart"
+          aria-hidden={enhancedSegments.length === 0}
+          onMouseLeave={() => handleHover(null)}
+        >
+          <svg
+            className="sprint-status__svg"
+            viewBox="0 0 160 160"
+            role="img"
+            aria-hidden
           >
-            <div className="sprint-status__donut-hole" />
+            <g transform="translate(80 80) rotate(-90)">
+              {enhancedSegments.map((segment, index) => {
+                const isHovered = index === activeIndex && hoveredIndex !== null;
+
+                return (
+                  <circle
+                    key={segment.label}
+                    className={`sprint-status__segment ${
+                      isAnimated ? 'is-animated' : ''
+                    } ${isHovered ? 'is-hovered' : ''}`.trim()}
+                    r={RADIUS}
+                    fill="transparent"
+                    stroke={segment.color}
+                    strokeWidth={20}
+                    strokeDasharray={`${isAnimated ? segment.dashLength : 0} ${CIRCUMFERENCE}`}
+                    strokeDashoffset={-segment.dashOffset}
+                    strokeLinecap="round"
+                    role="presentation"
+                    onMouseEnter={() => handleHover(index)}
+                  />
+                );
+              })}
+            </g>
+          </svg>
+          <div className="sprint-status__center" aria-hidden={activeSegment === undefined}>
+            {activeSegment ? (
+              <>
+                <span className="sprint-status__center-value">{activeSegment.displayValue}%</span>
+                <span className="sprint-status__center-label">{activeSegment.label}</span>
+              </>
+            ) : (
+              <span className="sprint-status__center-label">No sprint data</span>
+            )}
           </div>
         </div>
         <ul className="sprint-status__legend">
-          {segments.map((segment) => (
+          {enhancedSegments.map((segment, index) => (
             <li key={segment.label}>
-              <span className="legend-dot" style={{ backgroundColor: segment.color }} />
-              <div>
-                <p className="legend-label">{segment.label}</p>
-                <p className="legend-value">{segment.percentage}%</p>
-              </div>
+              <button
+                type="button"
+                className={`sprint-status__legend-item ${
+                  activeIndex === index ? 'is-active' : ''
+                }`}
+                onMouseEnter={() => handleHover(index)}
+                onMouseLeave={() => handleHover(null)}
+                onFocus={() => handleHover(index)}
+                onBlur={() => handleHover(null)}
+              >
+                <span className="legend-dot" style={{ backgroundColor: segment.color }} />
+                <div>
+                  <p className="legend-label">{segment.label}</p>
+                  <p className="legend-value">{segment.displayValue}%</p>
+                </div>
+              </button>
             </li>
           ))}
         </ul>

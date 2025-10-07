@@ -15,25 +15,6 @@ const fallbackStats: StatsCardProps[] = [
   { icon: '⚠️', title: 'Overdue', value: 3, subtitle: 'Needs attention', variant: 'danger' },
 ];
 
-const fallbackSprintSegments: SprintSegment[] = [
-  { label: 'Done', percentage: 63, color: 'var(--color-success)', count: 63 },
-  { label: 'To-Do', percentage: 25, color: 'var(--color-warning)', count: 25 },
-  { label: 'In Progress', percentage: 12, color: 'var(--color-info)', count: 12 },
-];
-
-const fallbackPriorities: Priority[] = [
-  { label: 'High', counts: { done: 10, inProgress: 6, todo: 2 } },
-  { label: 'Medium', counts: { done: 8, inProgress: 9, todo: 4 } },
-  { label: 'Low', counts: { done: 6, inProgress: 5, todo: 7 } },
-];
-
-const fallbackTeams: TeamProgressEntry[] = [
-  { name: 'Backend', points: 40, total: 50 },
-  { name: 'Frontend', points: 34, total: 40 },
-  { name: 'QA', points: 18, total: 25 },
-  { name: 'DevOps', points: 12, total: 20 },
-];
-
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 
 const toFiniteNumber = (value: unknown): number | null => {
@@ -516,18 +497,18 @@ const ProjectDashboard = (): JSX.Element => {
 
       const payload = await response.json();
       const segments = deepSearchForArray(payload, parseSprintSegmentsValue);
-      setSprintSegments(segments && segments.length > 0 ? segments : fallbackSprintSegments);
+      setSprintSegments(segments && segments.length > 0 ? segments : []);
 
       const priorities = deepSearchForArray(payload, parsePriorityValue);
-      setPriorityOverview(priorities && priorities.length > 0 ? priorities : fallbackPriorities);
+      setPriorityOverview(priorities && priorities.length > 0 ? priorities : []);
 
       const teams = deepSearchForArray(payload, parseTeamProgressValue);
-      setTeamProgress(teams && teams.length > 0 ? teams : fallbackTeams);
+      setTeamProgress(teams && teams.length > 0 ? teams : []);
     } catch (error) {
       console.error('Unable to fetch sprint data', error);
-      setSprintSegments(fallbackSprintSegments);
-      setPriorityOverview(fallbackPriorities);
-      setTeamProgress(fallbackTeams);
+      setSprintSegments([]);
+      setPriorityOverview([]);
+      setTeamProgress([]);
     }
   }, []);
 

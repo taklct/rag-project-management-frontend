@@ -96,17 +96,20 @@ const TaskPriorityOverview: FC<TaskPriorityOverviewProps> = ({ priorities }) => 
     [handleColumnLeave],
   );
 
+  const hasPriorities = priorityAnimations.length > 0;
+
   return (
     <section className="panel">
       <header className="panel__header">
         <h2>Task Priority Overview</h2>
       </header>
-      <div className="task-priority">
-        <div className="task-priority__chart" role="img" aria-label="Task priority bar chart">
-          {priorityAnimations.map((priority) => {
-            const isColumnActive = hoveredTarget?.label === priority.label;
-            const activeSegment =
-              isColumnActive && hoveredTarget?.key !== 'all'
+      {hasPriorities ? (
+        <div className="task-priority">
+          <div className="task-priority__chart" role="img" aria-label="Task priority bar chart">
+            {priorityAnimations.map((priority) => {
+              const isColumnActive = hoveredTarget?.label === priority.label;
+              const activeSegment =
+                isColumnActive && hoveredTarget?.key !== 'all'
                 ? priority.segments.find((segment) => segment.key === hoveredTarget.key)
                 : undefined;
 
@@ -162,20 +165,23 @@ const TaskPriorityOverview: FC<TaskPriorityOverviewProps> = ({ priorities }) => 
                 <p className="task-priority__label">{priority.label}</p>
               </div>
             );
-          })}
+            })}
+          </div>
+          <div className="task-priority__legend">
+            <p>
+              <span className="legend-dot" style={{ backgroundColor: segmentColors.done }} /> Done
+            </p>
+            <p>
+              <span className="legend-dot" style={{ backgroundColor: segmentColors.inProgress }} /> In Progress
+            </p>
+            <p>
+              <span className="legend-dot" style={{ backgroundColor: segmentColors.todo }} /> To-Do
+            </p>
+          </div>
         </div>
-        <div className="task-priority__legend">
-          <p>
-            <span className="legend-dot" style={{ backgroundColor: segmentColors.done }} /> Done
-          </p>
-          <p>
-            <span className="legend-dot" style={{ backgroundColor: segmentColors.inProgress }} /> In Progress
-          </p>
-          <p>
-            <span className="legend-dot" style={{ backgroundColor: segmentColors.todo }} /> To-Do
-          </p>
-        </div>
-      </div>
+      ) : (
+        <p className="panel__empty">No priority data available.</p>
+      )}
     </section>
   );
 };

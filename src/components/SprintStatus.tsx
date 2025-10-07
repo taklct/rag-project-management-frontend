@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import './SprintStatus.css';
+import '../css/SprintStatus.css';
 
 type SprintSegment = {
   label: string;

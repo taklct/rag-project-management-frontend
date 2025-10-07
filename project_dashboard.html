@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Project Dashboard</title>
+    <link rel="stylesheet" href="./src/css/index.css" />
+    <link rel="stylesheet" href="./src/css/project_dashboard.css" />
+    <link rel="stylesheet" href="./src/css/DashboardHeader.css" />
+    <link rel="stylesheet" href="./src/css/StatsCard.css" />
+    <link rel="stylesheet" href="./src/css/SprintStatus.css" />
+    <link rel="stylesheet" href="./src/css/TaskPriorityOverview.css" />
+    <link rel="stylesheet" href="./src/css/TeamProgress.css" />
+    <link rel="stylesheet" href="./src/css/AssistantPanel.css" />
+  </head>
+  <body>
+    <div class="project-dashboard">
+      <header class="dashboard-header">
+        <div class="dashboard-header__title">
+          <h1>Project Dashboard</h1>
+          <div class="dashboard-header__filters">
+            <label class="visually-hidden" for="project">Select project</label>
+            <select id="project" name="project">
+              <option selected>E-Commerce Platform</option>
+              <option>Mobile Banking</option>
+              <option>AI Assistant</option>
+            </select>
+          </div>
+        </div>
+        <button class="header-button" type="button">
+          <span aria-hidden="true">➕</span>
+          New Task
+        </button>
+      </header>
+      <main class="project-dashboard__layout">
+        <section class="project-dashboard__stats" aria-label="Project statistics summary">
+          <div class="stats-card stats-card--success">
+            <div aria-hidden="true" class="stats-card__icon">✅</div>
+            <div class="stats-card__content">
+              <p class="stats-card__title">Completed Today</p>
+              <p class="stats-card__value">12</p>
+              <p class="stats-card__subtitle">Logged today</p>
+            </div>
+          </div>
+          <div class="stats-card stats-card--default">
+            <div aria-hidden="true" class="stats-card__icon">🔁</div>
+            <div class="stats-card__content">
+              <p class="stats-card__title">Updated Today</p>
+              <p class="stats-card__value">8</p>
+              <p class="stats-card__subtitle">Tasks updated</p>
+            </div>
+          </div>
+          <div class="stats-card stats-card--info">
+            <div aria-hidden="true" class="stats-card__icon">🆕</div>
+            <div class="stats-card__content">
+              <p class="stats-card__title">Created Today</p>
+              <p class="stats-card__value">5</p>
+              <p class="stats-card__subtitle">New tasks added</p>
+            </div>
+          </div>
+          <div class="stats-card stats-card--danger">
+            <div aria-hidden="true" class="stats-card__icon">⚠️</div>
+            <div class="stats-card__content">
+              <p class="stats-card__title">Overdue</p>
+              <p class="stats-card__value">3</p>
+              <p class="stats-card__subtitle">Needs attention</p>
+            </div>
+          </div>
+        </section>
+        <section class="project-dashboard__content">
+          <div class="project-dashboard__main">
+            <section class="panel">
+              <header class="panel__header">
+                <h2>Sprint Task Status</h2>
+              </header>
+              <div class="sprint-status">
+                <div aria-hidden="true" class="sprint-status__chart">
+                  <div class="sprint-status__donut">
+                    <div class="sprint-status__donut-hole"></div>
+                  </div>
+                </div>
+                <ul class="sprint-status__legend">
+                  <li>
+                    <span class="legend-dot" style="background-color: var(--color-success);"></span>
+                    <div>
+                      <p class="legend-label">Done</p>
+                      <p class="legend-value">63%</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span class="legend-dot" style="background-color: var(--color-warning);"></span>
+                    <div>
+                      <p class="legend-label">To-Do</p>
+                      <p class="legend-value">25%</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span class="legend-dot" style="background-color: var(--color-info);"></span>
+                    <div>
+                      <p class="legend-label">In Progress</p>
+                      <p class="legend-value">12%</p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </section>
+            <section class="panel">
+              <header class="panel__header">
+                <h2>Task Priority Overview</h2>
+              </header>
+              <div class="task-priority">
+                <div aria-label="Task priority bar chart" class="task-priority__chart" role="img">
+                  <div class="task-priority__column">
+                    <div class="task-priority__bars">
+                      <div class="task-priority__bar task-priority__bar--done" style="height: 55.6%; background-color: var(--color-success);">
+                        <span class="visually-hidden">10 done tasks</span>
+                      </div>
+                      <div class="task-priority__bar task-priority__bar--inProgress" style="height: 33.3%; background-color: var(--color-info);">
+                        <span class="visually-hidden">6 in-progress tasks</span>
+                      </div>
+                      <div class="task-priority__bar task-priority__bar--todo" style="height: 11.1%; background-color: var(--color-warning);">
+                        <span class="visually-hidden">2 to-do tasks</span>
+                      </div>
+                    </div>
+                    <p class="task-priority__label">High</p>
+                  </div>
+                  <div class="task-priority__column">
+                    <div class="task-priority__bars">
+                      <div class="task-priority__bar task-priority__bar--done" style="height: 38.1%; background-color: var(--color-success);">
+                        <span class="visually-hidden">8 done tasks</span>
+                      </div>
+                      <div class="task-priority__bar task-priority__bar--inProgress" style="height: 42.9%; background-color: var(--color-info);">
+                        <span class="visually-hidden">9 in-progress tasks</span>
+                      </div>
+                      <div class="task-priority__bar task-priority__bar--todo" style="height: 19%; background-color: var(--color-warning);">
+                        <span class="visually-hidden">4 to-do tasks</span>
+                      </div>
+                    </div>
+                    <p class="task-priority__label">Medium</p>
+                  </div>
+                  <div class="task-priority__column">
+                    <div class="task-priority__bars">
+                      <div class="task-priority__bar task-priority__bar--done" style="height: 33.3%; background-color: var(--color-success);">
+                        <span class="visually-hidden">6 done tasks</span>
+                      </div>
+                      <div class="task-priority__bar task-priority__bar--inProgress" style="height: 27.8%; background-color: var(--color-info);">
+                        <span class="visually-hidden">5 in-progress tasks</span>
+                      </div>
+                      <div class="task-priority__bar task-priority__bar--todo" style="height: 38.9%; background-color: var(--color-warning);">
+                        <span class="visually-hidden">7 to-do tasks</span>
+                      </div>
+                    </div>
+                    <p class="task-priority__label">Low</p>
+                  </div>
+                </div>
+                <div class="task-priority__legend">
+                  <p><span class="legend-dot" style="background-color: var(--color-success);"></span> Done</p>
+                  <p><span class="legend-dot" style="background-color: var(--color-info);"></span> In Progress</p>
+                  <p><span class="legend-dot" style="background-color: var(--color-warning);"></span> To-Do</p>
+                </div>
+              </div>
+            </section>
+            <section class="panel">
+              <header class="panel__header">
+                <h2>Team Progress</h2>
+              </header>
+              <ul class="team-progress">
+                <li class="team-progress__item">
+                  <div class="team-progress__info">
+                    <p class="team-progress__name">Backend</p>
+                    <p class="team-progress__value">40/50 SP</p>
+                  </div>
+                  <div class="team-progress__bar">
+                    <div class="team-progress__fill" style="width: 80%;"></div>
+                  </div>
+                </li>
+                <li class="team-progress__item">
+                  <div class="team-progress__info">
+                    <p class="team-progress__name">Frontend</p>
+                    <p class="team-progress__value">34/40 SP</p>
+                  </div>
+                  <div class="team-progress__bar">
+                    <div class="team-progress__fill" style="width: 85%;"></div>
+                  </div>
+                </li>
+                <li class="team-progress__item">
+                  <div class="team-progress__info">
+                    <p class="team-progress__name">QA</p>
+                    <p class="team-progress__value">18/25 SP</p>
+                  </div>
+                  <div class="team-progress__bar">
+                    <div class="team-progress__fill" style="width: 72%;"></div>
+                  </div>
+                </li>
+                <li class="team-progress__item">
+                  <div class="team-progress__info">
+                    <p class="team-progress__name">DevOps</p>
+                    <p class="team-progress__value">12/20 SP</p>
+                  </div>
+                  <div class="team-progress__bar">
+                    <div class="team-progress__fill" style="width: 60%;"></div>
+                  </div>
+                </li>
+              </ul>
+            </section>
+          </div>
+          <section class="panel assistant-panel">
+            <header class="panel__header">
+              <div class="assistant-panel__title">
+                <span aria-hidden="true" class="assistant-panel__badge">🤖</span>
+                <h2>AI Assistant</h2>
+              </div>
+            </header>
+            <div class="assistant-panel__conversation">
+              <div aria-live="polite" class="assistant-message">
+                <p class="assistant-message__meta">Hello! I'm here to help you with your project management tasks.</p>
+                <p class="assistant-message__bubble">
+                  Hello! I'm here to help you with your project management tasks. Ask me anything about your sprint!
+                </p>
+              </div>
+              <div class="user-message">
+                <p class="user-message__bubble">Can you show me the status of our current sprint?</p>
+              </div>
+              <div aria-live="polite" class="assistant-message">
+                <p class="assistant-message__bubble">
+                  Based on the current sprint, 63% of tasks are done, 12% in progress, and 25% still to do. The backlog is
+                  slightly behind schedule.
+                </p>
+              </div>
+            </div>
+            <form aria-label="Send a message to the AI assistant" class="assistant-panel__input">
+              <input placeholder="Ask a question..." type="text" />
+              <button type="submit">Send</button>
+            </form>
+          </section>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

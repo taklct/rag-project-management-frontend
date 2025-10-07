@@ -1,5 +1,5 @@
 import type { FC, ReactNode } from 'react';
-import './StatsCard.css';
+import '../css/StatsCard.css';
 
 export type StatsCardVariant = 'default' | 'success' | 'info' | 'danger';
 

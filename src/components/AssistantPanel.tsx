@@ -1,5 +1,5 @@
 import { type FormEvent, useMemo, useState } from 'react';
-import './AssistantPanel.css';
+import '../css/AssistantPanel.css';
 
 type MessageRole = 'assistant' | 'user';
 

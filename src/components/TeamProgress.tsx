@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import { type FC, useEffect, useState } from 'react';
 import '../css/TeamProgress.css';
 
 export type TeamProgressEntry = {
@@ -12,6 +12,19 @@ export interface TeamProgressProps {
 }
 
 const TeamProgress: FC<TeamProgressProps> = ({ teams }) => {
+  const [isAnimated, setIsAnimated] = useState(false);
+
+  useEffect(() => {
+    setIsAnimated(false);
+    const frame = requestAnimationFrame(() => {
+      setIsAnimated(true);
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [teams]);
+
   return (
     <section className="panel">
       <header className="panel__header">
@@ -29,7 +42,10 @@ const TeamProgress: FC<TeamProgressProps> = ({ teams }) => {
                 </p>
               </div>
               <div className="team-progress__bar">
-                <div className="team-progress__fill" style={{ width: `${completion}%` }} />
+                <div
+                  className="team-progress__fill"
+                  style={{ width: isAnimated ? `${completion}%` : '0%' }}
+                />
               </div>
             </li>
           );

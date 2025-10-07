@@ -4,9 +4,18 @@ import '../css/DashboardHeader.css';
 export interface DashboardHeaderProps {
   onRefresh: () => void;
   isRefreshing?: boolean;
+  projects: string[];
+  selectedProject: string;
+  onProjectChange: (project: string) => void;
 }
 
-const DashboardHeader: FC<DashboardHeaderProps> = ({ onRefresh, isRefreshing = false }) => {
+const DashboardHeader: FC<DashboardHeaderProps> = ({
+  onRefresh,
+  isRefreshing = false,
+  projects,
+  selectedProject,
+  onProjectChange,
+}) => {
   return (
     <header className="dashboard-header">
       <div className="dashboard-header__title">
@@ -15,10 +24,16 @@ const DashboardHeader: FC<DashboardHeaderProps> = ({ onRefresh, isRefreshing = f
           <label htmlFor="project-select" className="visually-hidden">
             Select project
           </label>
-          <select id="project-select" defaultValue="E-Commerce Platform">
-            <option>E-Commerce Platform</option>
-            <option>Mobile Banking</option>
-            <option>AI Assistant</option>
+          <select
+            id="project-select"
+            value={selectedProject}
+            onChange={(event) => onProjectChange(event.target.value)}
+          >
+            {projects.map((project) => (
+              <option key={project} value={project}>
+                {project}
+              </option>
+            ))}
           </select>
         </div>
       </div>

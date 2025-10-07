@@ -445,16 +445,34 @@ const deepSearchForArray = <T,>(value: unknown, parser: (candidate: unknown) => 
   return undefined;
 };
 
+const PROJECT_OPTIONS = ['E-Commerce Platform', 'Mobile Banking', 'AI Assistant'];
+
+const createEndpointForProject = (endpoint: string, project: string): string => {
+  try {
+    const url = new URL(endpoint);
+    if (project.trim() !== '') {
+      url.searchParams.set('project', project);
+    }
+    return url.toString();
+  } catch (error) {
+    console.error('Unable to build endpoint URL', error);
+    return endpoint;
+  }
+};
+
 const ProjectDashboard = (): JSX.Element => {
   const [summaryStats, setSummaryStats] = useState<StatsCardProps[]>([]);
   const [sprintSegments, setSprintSegments] = useState<SprintSegment[]>([]);
   const [priorityOverview, setPriorityOverview] = useState<Priority[]>([]);
   const [teamProgress, setTeamProgress] = useState<TeamProgressEntry[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<string>(PROJECT_OPTIONS[0]);
 
-  const loadTaskSummary = useCallback(async () => {
+  const loadTaskSummary = useCallback(async (project: string) => {
     try {
-      const response = await fetch(API_ENDPOINTS.taskSummary, { cache: 'no-store' });
+      const response = await fetch(createEndpointForProject(API_ENDPOINTS.taskSummary, project), {
+        cache: 'no-store',
+      });
       if (!response.ok) {
         throw new Error(`Failed to load task summary: ${response.status}`);
       }
@@ -468,9 +486,11 @@ const ProjectDashboard = (): JSX.Element => {
     }
   }, []);
 
-  const loadSprintData = useCallback(async () => {
+  const loadSprintData = useCallback(async (project: string) => {
     try {
-      const response = await fetch(API_ENDPOINTS.sprintTasks, { cache: 'no-store' });
+      const response = await fetch(createEndpointForProject(API_ENDPOINTS.sprintTasks, project), {
+        cache: 'no-store',
+      });
       if (!response.ok) {
         throw new Error(`Failed to load sprint data: ${response.status}`);
       }
@@ -492,13 +512,20 @@ const ProjectDashboard = (): JSX.Element => {
     }
   }, []);
 
-  const loadAllData = useCallback(async () => {
-    await Promise.all([loadTaskSummary(), loadSprintData()]);
-  }, [loadTaskSummary, loadSprintData]);
+  const loadAllData = useCallback(
+    async (project: string) => {
+      await Promise.all([loadTaskSummary(project), loadSprintData(project)]);
+    },
+    [loadTaskSummary, loadSprintData],
+  );
 
   useEffect(() => {
-    void loadAllData();
-  }, [loadAllData]);
+    void loadAllData(selectedProject);
+  }, [loadAllData, selectedProject]);
+
+  const handleProjectChange = useCallback((project: string) => {
+    setSelectedProject(project);
+  }, []);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -506,7 +533,7 @@ const ProjectDashboard = (): JSX.Element => {
       const response = await fetch(API_ENDPOINTS.build, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rebuild: false }),
+        body: JSON.stringify({ rebuild: false, project: selectedProject }),
       });
       if (!response.ok) {
         throw new Error(`Failed to trigger build: ${response.status}`);
@@ -516,15 +543,21 @@ const ProjectDashboard = (): JSX.Element => {
     }
 
     try {
-      await loadAllData();
+      await loadAllData(selectedProject);
     } finally {
       setIsRefreshing(false);
     }
-  }, [loadAllData]);
+  }, [loadAllData, selectedProject]);
 
   return (
     <div className="project-dashboard">
-      <DashboardHeader onRefresh={handleRefresh} isRefreshing={isRefreshing} />
+      <DashboardHeader
+        onRefresh={handleRefresh}
+        isRefreshing={isRefreshing}
+        projects={PROJECT_OPTIONS}
+        selectedProject={selectedProject}
+        onProjectChange={handleProjectChange}
+      />
       <main className="project-dashboard__layout">
         <section className="project-dashboard__stats" aria-label="Project statistics summary">
           {summaryStats.map((stat, index) => (

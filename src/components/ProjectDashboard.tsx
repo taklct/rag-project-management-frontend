@@ -86,6 +86,100 @@ const inferSprintColor = (label: string): string => {
   return 'var(--color-info)';
 };
 
+type NormalisedStatusKey = 'done' | 'inProgress' | 'todo' | 'other';
+
+type NormalisedTask = {
+  statusKey: NormalisedStatusKey;
+  statusLabel: string;
+  priorityLabel: string;
+  teamLabel: string;
+  storyPoints: number;
+};
+
+const determineStatusCategory = (value: string | null): { key: NormalisedStatusKey; label: string } => {
+  if (!value) {
+    return { key: 'other', label: 'Unspecified' };
+  }
+
+  const normalised = value.toLowerCase();
+
+  if (/(done|complete|closed|finished|resolved)/.test(normalised)) {
+    return { key: 'done', label: 'Done' };
+  }
+
+  if (/(progress|wip|active|doing)/.test(normalised)) {
+    return { key: 'inProgress', label: 'In Progress' };
+  }
+
+  if (/(todo|to-do|backlog|pending|queue|queued|not started|blocked|awaiting)/.test(normalised)) {
+    return { key: 'todo', label: 'To-Do' };
+  }
+
+  return { key: 'other', label: normaliseLabelCase(value) };
+};
+
+const normaliseWithFallback = (value: string | null, fallback: string): string => {
+  if (value) {
+    return normaliseLabelCase(value);
+  }
+
+  return fallback;
+};
+
+const parseSprintTasksValue = (value: unknown): NormalisedTask[] | undefined => {
+  const parseArray = (items: unknown[]): NormalisedTask[] => {
+    return items
+      .map((item) => {
+        if (!isRecord(item)) {
+          return null;
+        }
+
+        const rawStatus = toNonEmptyString(
+          item.Status ?? item.status ?? item.state ?? item.progress ?? item.currentStatus,
+        );
+        const rawPriority = toNonEmptyString(item.Priority ?? item.priority ?? item.rank);
+        const rawTeam = toNonEmptyString(item.Team ?? item.team ?? item.group);
+        const rawPoints = toFiniteNumber(
+          item['Story Point'] ?? item.storyPoint ?? item.storyPoints ?? item.points ?? item.sp,
+        );
+
+        const { key, label } = determineStatusCategory(rawStatus);
+        const priorityLabel = normaliseWithFallback(rawPriority, 'Unspecified');
+        const teamLabel = normaliseWithFallback(rawTeam, 'Unassigned Team');
+        const storyPoints = toSafeInteger(rawPoints ?? 0);
+
+        return {
+          statusKey: key,
+          statusLabel: label,
+          priorityLabel,
+          teamLabel,
+          storyPoints,
+        } satisfies NormalisedTask;
+      })
+      .filter((item): item is NormalisedTask => item !== null);
+  };
+
+  if (Array.isArray(value)) {
+    const parsed = parseArray(value);
+    return parsed.length > 0 ? parsed : undefined;
+  }
+
+  if (isRecord(value)) {
+    const candidateKeys = ['tasks', 'items', 'data', 'results', 'records'];
+    for (const key of candidateKeys) {
+      const nested = value[key];
+      if (Array.isArray(nested)) {
+        const parsed = parseArray(nested);
+        if (parsed.length > 0) {
+          return parsed;
+        }
+      }
+    }
+  }
+
+  return undefined;
+};
+
 const parseTaskSummary = (data: unknown, depth = 0): StatsCardProps[] => {
   if (depth > 3 || data === undefined || data === null) {
     return [];
@@ -176,6 +270,30 @@ const parseTaskSummary = (data: unknown, depth = 0): StatsCardProps[] => {
 };
 
 const parseSprintSegmentsValue = (value: unknown): SprintSegment[] | undefined => {
+  const tasks = parseSprintTasksValue(value);
+  if (tasks && tasks.length > 0) {
+    const counts = new Map<string, { label: string; count: number }>();
+
+    tasks.forEach((task) => {
+      const key = task.statusLabel;
+      const entry = counts.get(key);
+      if (entry) {
+        entry.count += 1;
+      } else {
+        counts.set(key, { label: task.statusLabel, count: 1 });
+      }
+    });
+
+    const total = tasks.length;
+
+    return Array.from(counts.values()).map((entry) => ({
+      label: entry.label,
+      percentage: total > 0 ? clampPercentage((entry.count / total) * 100) : 0,
+      color: inferSprintColor(entry.label),
+      count: entry.count,
+    }));
+  }
+
   if (Array.isArray(value)) {
     const items = value
       .map((item) => {
@@ -263,6 +381,38 @@ const parseSprintSegmentsValue = (value: unknown): SprintSegment[] | undefined =
 };
 
 const parsePriorityValue = (value: unknown): Priority[] | undefined => {
+  const tasks = parseSprintTasksValue(value);
+  if (tasks && tasks.length > 0) {
+    const priorities = new Map<
+      string,
+      {
+        label: string;
+        counts: Priority['counts'];
+      }
+    >();
+
+    tasks.forEach((task) => {
+      const entry = priorities.get(task.priorityLabel);
+      const baseCounts = entry?.counts ?? { done: 0, inProgress: 0, todo: 0 };
+
+      const updatedCounts = { ...baseCounts };
+      if (task.statusKey === 'done') {
+        updatedCounts.done += 1;
+      } else if (task.statusKey === 'inProgress') {
+        updatedCounts.inProgress += 1;
+      } else {
+        updatedCounts.todo += 1;
+      }
+
+      priorities.set(task.priorityLabel, {
+        label: task.priorityLabel,
+        counts: updatedCounts,
+      });
+    });
+
+    return Array.from(priorities.values());
+  }
+
   if (Array.isArray(value)) {
     const parsed = value
       .map((item) => {
@@ -326,6 +476,55 @@ const parsePriorityValue = (value: unknown): Priority[] | undefined => {
 };
 
 const parseTeamProgressValue = (value: unknown): TeamProgressEntry[] | undefined => {
+  const tasks = parseSprintTasksValue(value);
+  if (tasks && tasks.length > 0) {
+    const teams = new Map<
+      string,
+      {
+        label: string;
+        completedPoints: number;
+        totalPoints: number;
+        completedTasks: number;
+        totalTasks: number;
+      }
+    >();
+
+    tasks.forEach((task) => {
+      const entry = teams.get(task.teamLabel) ?? {
+        label: task.teamLabel,
+        completedPoints: 0,
+        totalPoints: 0,
+        completedTasks: 0,
+        totalTasks: 0,
+      };
+
+      const contribution = task.storyPoints > 0 ? task.storyPoints : 1;
+      entry.totalPoints += contribution;
+      entry.totalTasks += 1;
+
+      if (task.statusKey === 'done') {
+        entry.completedPoints += contribution;
+        entry.completedTasks += 1;
+      }
+
+      teams.set(task.teamLabel, entry);
+    });
+
+    return Array.from(teams.values()).map((team) => {
+      const totalPoints = team.totalPoints > 0 ? team.totalPoints : team.totalTasks;
+      const completedPoints = team.completedPoints > 0 ? team.completedPoints : team.completedTasks;
+
+      const safeTotal = Math.max(1, toSafeInteger(totalPoints));
+      const safeCompleted = Math.min(safeTotal, toSafeInteger(completedPoints));
+
+      return {
+        name: team.label,
+        points: safeCompleted,
+        total: safeTotal,
+      } satisfies TeamProgressEntry;
+    });
+  }
+
   if (Array.isArray(value)) {
     const parsed = value
       .map((item) => {

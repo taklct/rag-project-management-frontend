@@ -4,7 +4,7 @@ import SprintStatus from './SprintStatus';
 import StatsCard, { type StatsCardProps } from './StatsCard';
 import TaskPriorityOverview from './TaskPriorityOverview';
 import TeamProgress from './TeamProgress';
-import './ProjectDashboard.css';
+import '../css/project_dashboard.css';
 
 const stats: StatsCardProps[] = [
   { icon: '✅', title: 'Completed Today', value: 12, subtitle: 'Logged today', variant: 'success' },

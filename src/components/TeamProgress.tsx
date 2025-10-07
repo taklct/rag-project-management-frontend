@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import './TeamProgress.css';
+import '../css/TeamProgress.css';
 
 type TeamProgressEntry = {
   name: string;

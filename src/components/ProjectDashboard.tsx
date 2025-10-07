@@ -479,52 +479,6 @@ const createEndpointForProject = (endpoint: string, project: string): string => 
   }
 };
 
-const extractAskPayload = (payload: unknown): unknown => {
-  if (payload === null || payload === undefined) {
-    return undefined;
-  }
-
-  if (typeof payload === 'string') {
-    const trimmed = payload.trim();
-    if (trimmed === '') {
-      return undefined;
-    }
-
-    try {
-      return JSON.parse(trimmed);
-    } catch {
-      return trimmed;
-    }
-  }
-
-  if (Array.isArray(payload)) {
-    return payload;
-  }
-
-  if (isRecord(payload)) {
-    const candidates = ['answer', 'result', 'data', 'payload', 'message', 'output'];
-    for (const key of candidates) {
-      if (key in payload) {
-        const nested = extractAskPayload(payload[key]);
-        if (nested !== undefined) {
-          return nested;
-        }
-      }
-    }
-
-    return payload;
-  }
-
-  return undefined;
-};
-
-const buildTaskSummaryQuestion = (project: string): string =>
-  [
-    `Provide current task summary metrics for the project "${project}".`,
-    'Respond with JSON using either an array of objects (title, value, subtitle?, variant?, icon?)',
-    'or an object containing keys like completedToday, updatedToday, createdToday, overdue.',
-  ].join(' ');
-
 const ProjectDashboard = (): JSX.Element => {
   const [summaryStats, setSummaryStats] = useState<StatsCardProps[]>([]);
   const [sprintSegments, setSprintSegments] = useState<SprintSegment[]>([]);
@@ -535,18 +489,15 @@ const ProjectDashboard = (): JSX.Element => {
 
   const loadTaskSummary = useCallback(async (project: string) => {
     try {
-      const response = await fetch(API_ENDPOINTS.ask, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: buildTaskSummaryQuestion(project) }),
+      const response = await fetch(createEndpointForProject(API_ENDPOINTS.taskSummary, project), {
+        cache: 'no-store',
       });
       if (!response.ok) {
         throw new Error(`Failed to load task summary: ${response.status}`);
       }
 
       const payload = await response.json();
-      const answer = extractAskPayload(payload);
-      const parsed = parseTaskSummary(answer ?? payload);
+      const parsed = parseTaskSummary(payload);
       setSummaryStats(parsed.length > 0 ? parsed : fallbackStats);
     } catch (error) {
       console.error('Unable to fetch task summary', error);

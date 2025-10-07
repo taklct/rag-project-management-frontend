@@ -52,9 +52,6 @@ const DashboardHeader: FC<DashboardHeaderProps> = ({
             ⟳
           </span>
         </button>
-        <button type="button" className="header-button" disabled={isRefreshing}>
-          <span aria-hidden="true">➕</span> New Task
-        </button>
       </div>
     </header>
   );

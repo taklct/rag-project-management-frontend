@@ -5,6 +5,7 @@ export type SprintSegment = {
   label: string;
   percentage: number;
   color: string;
+  count?: number | null;
 };
 
 export interface SprintStatusProps {
@@ -17,6 +18,7 @@ type EnhancedSegment = SprintSegment & {
   dashLength: number;
   dashOffset: number;
   displayValue: number;
+  displayCount: number | null;
 };
 
 const RADIUS = 68;
@@ -42,11 +44,15 @@ const SprintStatus: FC<SprintStatusProps> = ({ segments }) => {
       const safeValue = Number.isFinite(segment.percentage)
         ? Math.max(segment.percentage, 0)
         : 0;
+      const rawCount = typeof segment.count === 'number' && Number.isFinite(segment.count)
+        ? Math.max(Math.round(segment.count), 0)
+        : null;
 
       return {
         ...segment,
         value: safeValue,
         displayValue: Math.round(safeValue),
+        displayCount: rawCount,
       } satisfies Omit<EnhancedSegment, 'ratio' | 'dashLength' | 'dashOffset'>;
     });
 
@@ -63,6 +69,7 @@ const SprintStatus: FC<SprintStatusProps> = ({ segments }) => {
           dashLength: CIRCUMFERENCE,
           dashOffset: 0,
           displayValue: 0,
+          displayCount: null,
         },
       ] satisfies EnhancedSegment[];
     }
@@ -80,6 +87,7 @@ const SprintStatus: FC<SprintStatusProps> = ({ segments }) => {
         ratio,
         dashLength,
         dashOffset,
+        displayCount: segment.displayCount ?? null,
       } satisfies EnhancedSegment;
     });
   }, [segments]);
@@ -157,6 +165,11 @@ const SprintStatus: FC<SprintStatusProps> = ({ segments }) => {
             {activeSegment ? (
               <>
                 <span className="sprint-status__center-value">{activeSegment.displayValue}%</span>
+                {activeSegment.displayCount !== null ? (
+                  <span className="sprint-status__center-count">
+                    {activeSegment.displayCount} task{activeSegment.displayCount === 1 ? '' : 's'}
+                  </span>
+                ) : null}
                 <span className="sprint-status__center-label">{activeSegment.label}</span>
               </>
             ) : (
@@ -180,7 +193,14 @@ const SprintStatus: FC<SprintStatusProps> = ({ segments }) => {
                 <span className="legend-dot" style={{ backgroundColor: segment.color }} />
                 <div>
                   <p className="legend-label">{segment.label}</p>
-                  <p className="legend-value">{segment.displayValue}%</p>
+                  <p className="legend-value">
+                    <span>{segment.displayValue}%</span>
+                    {segment.displayCount !== null ? (
+                      <span className="legend-count">
+                        {segment.displayCount} task{segment.displayCount === 1 ? '' : 's'}
+                      </span>
+                    ) : null}
+                  </p>
                 </div>
               </button>
             </li>

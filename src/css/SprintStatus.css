@@ -48,12 +48,19 @@
   color: #0f172a;
 }
 
+.sprint-status__center-count {
+  margin-top: 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
 .sprint-status__center-label {
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #64748b;
-  margin-top: 0.2rem;
+  margin-top: 0.25rem;
 }
 
 .sprint-status__legend {
@@ -101,10 +108,19 @@
   margin: 0;
   font-size: 0.85rem;
   color: #64748b;
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  flex-wrap: wrap;
 }
 
 .sprint-status__legend-item.is-active .legend-value {
   color: #0f172a;
+}
+
+.legend-count {
+  color: inherit;
+  font-weight: 600;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -12,6 +12,7 @@ export const API_ENDPOINTS = {
   build: `${API_SERVER}/build`,
   taskSummary: `${API_SERVER}/project-dashboard/task-summary`,
   sprintTasks: `${API_SERVER}/project-dashboard/tasks-of-sprint?sprint=20`,
+  ask: `${API_SERVER}/ask`,
 } as const;
 
 export default API_SERVER;

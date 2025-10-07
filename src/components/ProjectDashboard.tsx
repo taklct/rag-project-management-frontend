@@ -16,9 +16,9 @@ const fallbackStats: StatsCardProps[] = [
 ];
 
 const fallbackSprintSegments: SprintSegment[] = [
-  { label: 'Done', percentage: 63, color: 'var(--color-success)' },
-  { label: 'To-Do', percentage: 25, color: 'var(--color-warning)' },
-  { label: 'In Progress', percentage: 12, color: 'var(--color-info)' },
+  { label: 'Done', percentage: 63, color: 'var(--color-success)', count: 63 },
+  { label: 'To-Do', percentage: 25, color: 'var(--color-warning)', count: 25 },
+  { label: 'In Progress', percentage: 12, color: 'var(--color-info)', count: 12 },
 ];
 
 const fallbackPriorities: Priority[] = [
@@ -105,7 +105,11 @@ const inferSprintColor = (label: string): string => {
   return 'var(--color-info)';
 };
 
-const parseTaskSummary = (data: unknown): StatsCardProps[] => {
+const parseTaskSummary = (data: unknown, depth = 0): StatsCardProps[] => {
+  if (depth > 3 || data === undefined || data === null) {
+    return [];
+  }
+
   if (Array.isArray(data)) {
     const parsed = data
       .map((item) => {
@@ -133,7 +137,9 @@ const parseTaskSummary = (data: unknown): StatsCardProps[] => {
       })
       .filter((item): item is StatsCardProps => item !== null);
 
-    return parsed;
+    if (parsed.length > 0) {
+      return parsed;
+    }
   }
 
   if (isRecord(data)) {
@@ -159,7 +165,7 @@ const parseTaskSummary = (data: unknown): StatsCardProps[] => {
       },
     ];
 
-    return mappings
+    const direct = mappings
       .map(({ keys, stat }) => {
         const value = keys
           .map((key) => toNumericOrString(data[key]))
@@ -172,6 +178,17 @@ const parseTaskSummary = (data: unknown): StatsCardProps[] => {
         return { ...stat, value } satisfies StatsCardProps;
       })
       .filter((item): item is StatsCardProps => item !== null);
+
+    if (direct.length > 0) {
+      return direct;
+    }
+
+    for (const value of Object.values(data)) {
+      const nested = parseTaskSummary(value, depth + 1);
+      if (nested.length > 0) {
+        return nested;
+      }
+    }
   }
 
   return [];
@@ -220,11 +237,12 @@ const parseSprintSegmentsValue = (value: unknown): SprintSegment[] | undefined =
             ? (item.count ?? 0) / totalCount * 100
             : 0;
 
-      return {
-        label: item.label,
-        percentage: clampPercentage(computedPercentage),
-        color: item.color,
-      } satisfies SprintSegment;
+        return {
+          label: item.label,
+          percentage: clampPercentage(computedPercentage),
+          color: item.color,
+          count: item.count !== null ? toSafeInteger(item.count) : null,
+        } satisfies SprintSegment;
     });
   }
 
@@ -242,7 +260,7 @@ const parseSprintSegmentsValue = (value: unknown): SprintSegment[] | undefined =
           return null;
         }
 
-        return { label, count: amount };
+        return { label, count: toSafeInteger(amount) };
       })
       .filter((item): item is { label: string; count: number } => item !== null);
 
@@ -256,6 +274,7 @@ const parseSprintSegmentsValue = (value: unknown): SprintSegment[] | undefined =
       label: item.label,
       percentage: total > 0 ? clampPercentage((item.count / total) * 100) : 0,
       color: inferSprintColor(item.label),
+      count: item.count,
     }));
   }
 

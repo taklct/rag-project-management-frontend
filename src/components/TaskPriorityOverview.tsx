@@ -1,20 +1,14 @@
 import type { FC } from 'react';
 import '../css/TaskPriorityOverview.css';
 
-type PriorityKey = 'done' | 'inProgress' | 'todo';
+export type PriorityKey = 'done' | 'inProgress' | 'todo';
 
-type PriorityCounts = Record<PriorityKey, number>;
+export type PriorityCounts = Record<PriorityKey, number>;
 
-type Priority = {
+export type Priority = {
   label: string;
   counts: PriorityCounts;
 };
-
-const priorities: Priority[] = [
-  { label: 'High', counts: { done: 10, inProgress: 6, todo: 2 } },
-  { label: 'Medium', counts: { done: 8, inProgress: 9, todo: 4 } },
-  { label: 'Low', counts: { done: 6, inProgress: 5, todo: 7 } },
-];
 
 const segmentColors: Record<PriorityKey, string> = {
   done: 'var(--color-success)',
@@ -22,7 +16,11 @@ const segmentColors: Record<PriorityKey, string> = {
   todo: 'var(--color-warning)',
 };
 
-const TaskPriorityOverview: FC = () => {
+export interface TaskPriorityOverviewProps {
+  priorities: Priority[];
+}
+
+const TaskPriorityOverview: FC<TaskPriorityOverviewProps> = ({ priorities }) => {
   return (
     <section className="panel">
       <header className="panel__header">
@@ -32,6 +30,8 @@ const TaskPriorityOverview: FC = () => {
         <div className="task-priority__chart" role="img" aria-label="Task priority bar chart">
           {priorities.map((priority) => {
             const total = priority.counts.done + priority.counts.inProgress + priority.counts.todo;
+            const hasWork = total > 0;
+            const denominator = hasWork ? total : 1;
             const segments = (Object.keys(priority.counts) as PriorityKey[]).map((key) => ({
               key,
               value: priority.counts[key],
@@ -45,7 +45,10 @@ const TaskPriorityOverview: FC = () => {
                     <div
                       key={segment.key}
                       className={`task-priority__bar task-priority__bar--${segment.key}`}
-                      style={{ height: `${(segment.value / total) * 100}%`, backgroundColor: segment.color }}
+                      style={{
+                        height: hasWork ? `${(segment.value / denominator) * 100}%` : '0%',
+                        backgroundColor: segment.color,
+                      }}
                     >
                       <span className="visually-hidden">
                         {segment.value} {segment.key} tasks

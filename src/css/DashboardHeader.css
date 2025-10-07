@@ -12,6 +12,12 @@
   gap: 1.5rem;
 }
 
+.dashboard-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .dashboard-header__filters {
   display: flex;
   align-items: center;
@@ -50,4 +56,62 @@
 .header-button:hover {
   background: #1d4ed8;
   transform: translateY(-1px);
+}
+
+.header-button:disabled {
+  background: #60a5fa;
+  cursor: not-allowed;
+  transform: none;
+  opacity: 0.85;
+}
+
+.header-icon-button {
+  border: none;
+  border-radius: 999px;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e2e8f0;
+  color: #0f172a;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 150ms ease-in-out, transform 150ms ease-in-out;
+}
+
+.header-icon-button:hover {
+  background: #cbd5f5;
+  transform: translateY(-1px);
+}
+
+.header-icon-button:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.45);
+  outline-offset: 2px;
+}
+
+.header-icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+  transform: none;
+}
+
+.header-icon-button__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes dashboard-header-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.header-icon-button__icon--spinning {
+  animation: dashboard-header-spin 1.1s linear infinite;
 }

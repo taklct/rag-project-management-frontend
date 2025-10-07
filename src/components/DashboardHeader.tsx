@@ -1,7 +1,12 @@
 import type { FC } from 'react';
 import '../css/DashboardHeader.css';
 
-const DashboardHeader: FC = () => {
+export interface DashboardHeaderProps {
+  onRefresh: () => void;
+  isRefreshing?: boolean;
+}
+
+const DashboardHeader: FC<DashboardHeaderProps> = ({ onRefresh, isRefreshing = false }) => {
   return (
     <header className="dashboard-header">
       <div className="dashboard-header__title">
@@ -17,9 +22,25 @@ const DashboardHeader: FC = () => {
           </select>
         </div>
       </div>
-      <button type="button" className="header-button">
-        <span aria-hidden="true">➕</span> New Task
-      </button>
+      <div className="dashboard-header__actions">
+        <button
+          type="button"
+          className="header-icon-button"
+          onClick={onRefresh}
+          disabled={isRefreshing}
+          aria-label={isRefreshing ? 'Refreshing data' : 'Refresh dashboard data'}
+        >
+          <span
+            aria-hidden="true"
+            className={`header-icon-button__icon${isRefreshing ? ' header-icon-button__icon--spinning' : ''}`}
+          >
+            ⟳
+          </span>
+        </button>
+        <button type="button" className="header-button" disabled={isRefreshing}>
+          <span aria-hidden="true">➕</span> New Task
+        </button>
+      </div>
     </header>
   );
 };

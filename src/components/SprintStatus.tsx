@@ -1,19 +1,17 @@
 import type { FC } from 'react';
 import '../css/SprintStatus.css';
 
-type SprintSegment = {
+export type SprintSegment = {
   label: string;
   percentage: number;
   color: string;
 };
 
-const segments: SprintSegment[] = [
-  { label: 'Done', percentage: 63, color: 'var(--color-success)' },
-  { label: 'To-Do', percentage: 25, color: 'var(--color-warning)' },
-  { label: 'In Progress', percentage: 12, color: 'var(--color-info)' },
-];
+export interface SprintStatusProps {
+  segments: SprintSegment[];
+}
 
-const SprintStatus: FC = () => {
+const SprintStatus: FC<SprintStatusProps> = ({ segments }) => {
   return (
     <section className="panel">
       <header className="panel__header">

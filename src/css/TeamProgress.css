@@ -44,4 +44,11 @@
   height: 100%;
   background: linear-gradient(90deg, #22c55e, #16a34a);
   border-radius: 999px;
+  transition: width 0.9s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team-progress__fill {
+    transition: none;
+  }
 }

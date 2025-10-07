@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import { type CSSProperties, type FC, useEffect, useMemo, useState } from 'react';
 import '../css/TaskPriorityOverview.css';
 
 export type PriorityKey = 'done' | 'inProgress' | 'todo';
@@ -21,6 +21,40 @@ export interface TaskPriorityOverviewProps {
 }
 
 const TaskPriorityOverview: FC<TaskPriorityOverviewProps> = ({ priorities }) => {
+  const [isAnimated, setIsAnimated] = useState(false);
+
+  useEffect(() => {
+    setIsAnimated(false);
+    const frame = requestAnimationFrame(() => {
+      setIsAnimated(true);
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [priorities]);
+
+  const priorityAnimations = useMemo(() => {
+    return priorities.map((priority, columnIndex) => {
+      const total = priority.counts.done + priority.counts.inProgress + priority.counts.todo;
+      const hasWork = total > 0;
+      const denominator = hasWork ? total : 1;
+      const segments = (Object.keys(priority.counts) as PriorityKey[]).map((key, index) => {
+        const rawValue = priority.counts[key];
+        const ratio = hasWork ? Math.max(rawValue / denominator, 0) : 0;
+        const segmentStyle: CSSProperties & Record<string, string | number> = {
+          ['--bar-fill' as string]: ratio,
+          ['--bar-delay' as string]: `${columnIndex * 0.1 + index * 0.05}s`,
+          backgroundColor: segmentColors[key],
+        };
+
+        return { key, value: rawValue, style: segmentStyle };
+      });
+
+      return { ...priority, segments };
+    });
+  }, [priorities]);
+
   return (
     <section className="panel">
       <header className="panel__header">
@@ -28,38 +62,24 @@ const TaskPriorityOverview: FC<TaskPriorityOverviewProps> = ({ priorities }) => 
       </header>
       <div className="task-priority">
         <div className="task-priority__chart" role="img" aria-label="Task priority bar chart">
-          {priorities.map((priority) => {
-            const total = priority.counts.done + priority.counts.inProgress + priority.counts.todo;
-            const hasWork = total > 0;
-            const denominator = hasWork ? total : 1;
-            const segments = (Object.keys(priority.counts) as PriorityKey[]).map((key) => ({
-              key,
-              value: priority.counts[key],
-              color: segmentColors[key],
-            }));
-
-            return (
-              <div key={priority.label} className="task-priority__column">
-                <div className="task-priority__bars">
-                  {segments.map((segment) => (
-                    <div
-                      key={segment.key}
-                      className={`task-priority__bar task-priority__bar--${segment.key}`}
-                      style={{
-                        height: hasWork ? `${(segment.value / denominator) * 100}%` : '0%',
-                        backgroundColor: segment.color,
-                      }}
-                    >
-                      <span className="visually-hidden">
-                        {segment.value} {segment.key} tasks
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <p className="task-priority__label">{priority.label}</p>
+          {priorityAnimations.map((priority) => (
+            <div key={priority.label} className="task-priority__column">
+              <div className="task-priority__bars">
+                {priority.segments.map((segment) => (
+                  <div
+                    key={segment.key}
+                    className={`task-priority__bar task-priority__bar--${segment.key} ${isAnimated ? 'is-animated' : ''}`}
+                    style={segment.style}
+                  >
+                    <span className="visually-hidden">
+                      {segment.value} {segment.key} tasks
+                    </span>
+                  </div>
+                ))}
               </div>
-            );
-          })}
+              <p className="task-priority__label">{priority.label}</p>
+            </div>
+          ))}
         </div>
         <div className="task-priority__legend">
           <p>

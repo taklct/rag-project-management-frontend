@@ -527,8 +527,8 @@ const ProjectDashboard = (): JSX.Element => {
       <DashboardHeader onRefresh={handleRefresh} isRefreshing={isRefreshing} />
       <main className="project-dashboard__layout">
         <section className="project-dashboard__stats" aria-label="Project statistics summary">
-          {summaryStats.map((stat) => (
-            <StatsCard key={stat.title} {...stat} />
+          {summaryStats.map((stat, index) => (
+            <StatsCard key={stat.title} {...stat} animationOrder={index} />
           ))}
         </section>
         <section className="project-dashboard__content">

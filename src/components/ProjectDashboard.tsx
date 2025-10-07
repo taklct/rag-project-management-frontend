@@ -446,10 +446,10 @@ const deepSearchForArray = <T,>(value: unknown, parser: (candidate: unknown) => 
 };
 
 const ProjectDashboard = (): JSX.Element => {
-  const [summaryStats, setSummaryStats] = useState<StatsCardProps[]>(fallbackStats);
-  const [sprintSegments, setSprintSegments] = useState<SprintSegment[]>(fallbackSprintSegments);
-  const [priorityOverview, setPriorityOverview] = useState<Priority[]>(fallbackPriorities);
-  const [teamProgress, setTeamProgress] = useState<TeamProgressEntry[]>(fallbackTeams);
+  const [summaryStats, setSummaryStats] = useState<StatsCardProps[]>([]);
+  const [sprintSegments, setSprintSegments] = useState<SprintSegment[]>([]);
+  const [priorityOverview, setPriorityOverview] = useState<Priority[]>([]);
+  const [teamProgress, setTeamProgress] = useState<TeamProgressEntry[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const loadTaskSummary = useCallback(async () => {
@@ -461,11 +461,10 @@ const ProjectDashboard = (): JSX.Element => {
 
       const payload = await response.json();
       const parsed = parseTaskSummary(payload);
-      if (parsed.length > 0) {
-        setSummaryStats(parsed);
-      }
+      setSummaryStats(parsed.length > 0 ? parsed : fallbackStats);
     } catch (error) {
       console.error('Unable to fetch task summary', error);
+      setSummaryStats(fallbackStats);
     }
   }, []);
 
@@ -478,21 +477,18 @@ const ProjectDashboard = (): JSX.Element => {
 
       const payload = await response.json();
       const segments = deepSearchForArray(payload, parseSprintSegmentsValue);
-      if (segments && segments.length > 0) {
-        setSprintSegments(segments);
-      }
+      setSprintSegments(segments && segments.length > 0 ? segments : fallbackSprintSegments);
 
       const priorities = deepSearchForArray(payload, parsePriorityValue);
-      if (priorities && priorities.length > 0) {
-        setPriorityOverview(priorities);
-      }
+      setPriorityOverview(priorities && priorities.length > 0 ? priorities : fallbackPriorities);
 
       const teams = deepSearchForArray(payload, parseTeamProgressValue);
-      if (teams && teams.length > 0) {
-        setTeamProgress(teams);
-      }
+      setTeamProgress(teams && teams.length > 0 ? teams : fallbackTeams);
     } catch (error) {
       console.error('Unable to fetch sprint data', error);
+      setSprintSegments(fallbackSprintSegments);
+      setPriorityOverview(fallbackPriorities);
+      setTeamProgress(fallbackTeams);
     }
   }, []);
 
@@ -507,7 +503,11 @@ const ProjectDashboard = (): JSX.Element => {
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      const response = await fetch(API_ENDPOINTS.build, { method: 'POST' });
+      const response = await fetch(API_ENDPOINTS.build, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rebuild: false }),
+      });
       if (!response.ok) {
         throw new Error(`Failed to trigger build: ${response.status}`);
       }

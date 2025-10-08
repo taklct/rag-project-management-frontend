@@ -76,15 +76,19 @@ const toSafeInteger = (value: number): number => Math.max(0, Math.round(value));
 
 const inferSprintColor = (label: string): string => {
   const normalised = label.toLowerCase();
-  if (normalised.includes('done') || normalised.includes('complete')) {
-    return 'var(--color-success)';
+  if (/(done|complete|closed|finished|resolved)/.test(normalised)) {
+    return 'var(--color-status-done)';
   }
 
-  if (normalised.includes('todo') || normalised.includes('backlog') || normalised.includes('pending')) {
-    return 'var(--color-warning)';
+  if (/(progress|wip|active|doing)/.test(normalised)) {
+    return 'var(--color-status-in-progress)';
   }
 
-  return 'var(--color-info)';
+  if (/(todo|to-do|backlog|pending|queue|queued|not started|blocked|awaiting)/.test(normalised)) {
+    return 'var(--color-status-todo)';
+  }
+
+  return 'var(--color-status-other)';
 };
 
 type NormalisedStatusKey = 'done' | 'inProgress' | 'todo' | 'other';
@@ -989,9 +993,12 @@ const ProjectDashboard = (): JSX.Element => {
         </section>
         <section className="project-dashboard__content">
           <div className="project-dashboard__main">
+            <div className="project-dashboard__grid">
+              <TaskPriorityOverview priorities={priorityOverview} />
+            </div>
             <div className="project-dashboard__grid project-dashboard__grid--two">
               <SprintStatus segments={sprintSegments} />
-              <TaskPriorityOverview priorities={priorityOverview} />
+              <TeamProgress teams={teamProgress} />
             </div>
             <div className="project-dashboard__grid project-dashboard__grid--two">
               <IssuePanel
@@ -1009,7 +1016,6 @@ const ProjectDashboard = (): JSX.Element => {
                 tone="warning"
               />
             </div>
-            <TeamProgress teams={teamProgress} />
           </div>
           <AssistantPanel />
         </section>

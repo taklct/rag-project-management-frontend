@@ -5,6 +5,7 @@ import SprintStatus, { type SprintSegment } from './SprintStatus';
 import StatsCard, { type StatsCardProps } from './StatsCard';
 import TaskPriorityOverview, { type Priority } from './TaskPriorityOverview';
 import TeamProgress, { type TeamProgressEntry } from './TeamProgress';
+import IssuePanel, { type IssueItem, type IssueSeverity } from './IssuePanel';
 import { API_ENDPOINTS } from '../config';
 import '../css/project_dashboard.css';
 
@@ -615,6 +616,186 @@ const parseTeamProgressValue = (value: unknown): TeamProgressEntry[] | undefined
   return undefined;
 };
 
+const toIssueSeverity = (value: unknown, fallback: IssueSeverity = 'medium'): IssueSeverity => {
+  if (typeof value === 'string') {
+    const normalised = value.trim().toLowerCase();
+    if (normalised === '') {
+      return fallback;
+    }
+
+    if (/(critical|blocker|urgent|high|severe|p0|p1|red|major|immediate)/.test(normalised)) {
+      return 'high';
+    }
+
+    if (/(medium|med|moderate|p2|amber|orange|normal)/.test(normalised)) {
+      return 'medium';
+    }
+
+    if (/(low|minor|p3|p4|green|trivial)/.test(normalised)) {
+      return 'low';
+    }
+
+    if (/(overdue|late)/.test(normalised)) {
+      return 'high';
+    }
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    if (value >= 3) {
+      return 'high';
+    }
+    if (value <= 1) {
+      return 'low';
+    }
+    return 'medium';
+  }
+
+  if (typeof value === 'boolean') {
+    return value ? 'high' : fallback;
+  }
+
+  return fallback;
+};
+
+const pickStringValue = (record: Record<string, unknown>, keys: string[]): string | null => {
+  for (const key of keys) {
+    const candidate = toNonEmptyString(record[key]);
+    if (candidate) {
+      return candidate;
+    }
+  }
+  return null;
+};
+
+const pickNumberValue = (record: Record<string, unknown>, keys: string[]): number | null => {
+  for (const key of keys) {
+    const candidate = toFiniteNumber(record[key]);
+    if (candidate !== null && candidate !== undefined && Number.isFinite(candidate)) {
+      return Math.max(0, Math.round(Math.abs(candidate)));
+    }
+  }
+  return null;
+};
+
+interface IssueParseConfig {
+  fallbackTitle: string;
+  defaultSeverity: IssueSeverity;
+  idPrefix: string;
+  waitingKeys?: string[];
+  dueKeys?: string[];
+  daysKeys?: string[];
+  assigneeKeys?: string[];
+  severityKeys?: string[];
+}
+
+const parseIssueCollection = (value: unknown, config: IssueParseConfig): IssueItem[] | undefined => {
+  const parseArray = (items: unknown[]): IssueItem[] =>
+    items
+      .map((item, index) => {
+        if (!isRecord(item)) {
+          return null;
+        }
+
+        const record = item as Record<string, unknown>;
+        const id =
+          pickStringValue(record, ['id', 'key', 'issueId', 'issue_id', 'itemId', 'item_id', 'reference']) ??
+          `${config.idPrefix}-${index}`;
+        const title =
+          pickStringValue(record, ['title', 'name', 'summary', 'task', 'item', 'issue', 'label']) ??
+          `${config.fallbackTitle} ${index + 1}`;
+        const description =
+          pickStringValue(record, [
+            'description',
+            'detail',
+            'details',
+            'notes',
+            'reason',
+            'message',
+            'context',
+            'statusDescription',
+          ]) ?? undefined;
+        const severityCandidate =
+          pickStringValue(record, config.severityKeys ?? []) ??
+          record.severity ??
+          record.priority ??
+          record.level ??
+          record.importance ??
+          record.impact;
+        const severity = toIssueSeverity(severityCandidate, config.defaultSeverity);
+
+        const waiting = pickStringValue(record, config.waitingKeys ?? []);
+        const due = pickStringValue(record, config.dueKeys ?? []);
+        const overdueDays = pickNumberValue(record, config.daysKeys ?? []);
+        const assignee = pickStringValue(record, config.assigneeKeys ?? []);
+
+        const metaParts: string[] = [];
+        if (waiting) {
+          metaParts.push(`Waiting on ${waiting}`);
+        }
+        if (due) {
+          metaParts.push(`Due: ${due}`);
+        }
+        if (overdueDays !== null) {
+          metaParts.push(`Overdue by ${overdueDays} day${overdueDays === 1 ? '' : 's'}`);
+        }
+        if (assignee) {
+          metaParts.push(`Owner: ${assignee}`);
+        }
+
+        const meta = metaParts.length > 0 ? metaParts.join(' • ') : undefined;
+
+        return {
+          id,
+          title,
+          description,
+          meta,
+          severity,
+        } satisfies IssueItem;
+      })
+      .filter((item): item is IssueItem => item !== null);
+
+  if (Array.isArray(value)) {
+    const parsed = parseArray(value);
+    return parsed.length > 0 ? parsed : undefined;
+  }
+
+  if (isRecord(value)) {
+    const candidateKeys = ['items', 'data', 'results', 'records', 'issues', 'blocked', 'overdue'];
+    for (const key of candidateKeys) {
+      const nested = value[key];
+      if (Array.isArray(nested)) {
+        const parsed = parseArray(nested);
+        if (parsed.length > 0) {
+          return parsed;
+        }
+      }
+    }
+  }
+
+  return undefined;
+};
+
+const parseBlockedItemsValue = (value: unknown): IssueItem[] | undefined =>
+  parseIssueCollection(value, {
+    fallbackTitle: 'Blocked item',
+    defaultSeverity: 'high',
+    idPrefix: 'blocked',
+    waitingKeys: ['blockedBy', 'blocked_by', 'dependency', 'dependsOn', 'depends_on', 'waitingOn', 'waiting_on'],
+    assigneeKeys: ['assignee', 'owner', 'responsible', 'lead', 'contact'],
+    severityKeys: ['severity', 'priority', 'level', 'impact', 'risk'],
+  });
+
+const parseOverdueItemsValue = (value: unknown): IssueItem[] | undefined =>
+  parseIssueCollection(value, {
+    fallbackTitle: 'Overdue item',
+    defaultSeverity: 'high',
+    idPrefix: 'overdue',
+    dueKeys: ['due', 'dueDate', 'due_date', 'deadline', 'targetDate', 'target_date', 'expected'],
+    daysKeys: ['daysOverdue', 'overdueDays', 'days_late', 'lateBy', 'delay', 'age'],
+    assigneeKeys: ['assignee', 'owner', 'responsible', 'lead', 'contact'],
+    severityKeys: ['severity', 'priority', 'level', 'impact', 'risk', 'status'],
+  });
+
 const deepSearchForArray = <T,>(value: unknown, parser: (candidate: unknown) => T[] | undefined, depth = 0): T[] | undefined => {
   if (depth > 3) {
     return undefined;
@@ -664,6 +845,8 @@ const ProjectDashboard = (): JSX.Element => {
   const [sprintSegments, setSprintSegments] = useState<SprintSegment[]>([]);
   const [priorityOverview, setPriorityOverview] = useState<Priority[]>([]);
   const [teamProgress, setTeamProgress] = useState<TeamProgressEntry[]>([]);
+  const [blockedItems, setBlockedItems] = useState<IssueItem[]>([]);
+  const [overdueItems, setOverdueItems] = useState<IssueItem[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedProject, setSelectedProject] = useState<string>(PROJECT_OPTIONS[0]);
 
@@ -711,11 +894,52 @@ const ProjectDashboard = (): JSX.Element => {
     }
   }, []);
 
+  const loadBlockedItems = useCallback(async (project: string) => {
+    try {
+      const response = await fetch(createEndpointForProject(API_ENDPOINTS.blockedItems, project), {
+        cache: 'no-store',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to load blocked items: ${response.status}`);
+      }
+
+      const payload = await response.json();
+      const items = deepSearchForArray(payload, parseBlockedItemsValue);
+      setBlockedItems(items && items.length > 0 ? items : []);
+    } catch (error) {
+      console.error('Unable to fetch blocked items', error);
+      setBlockedItems([]);
+    }
+  }, []);
+
+  const loadOverdueItems = useCallback(async (project: string) => {
+    try {
+      const response = await fetch(createEndpointForProject(API_ENDPOINTS.overdueItems, project), {
+        cache: 'no-store',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to load overdue items: ${response.status}`);
+      }
+
+      const payload = await response.json();
+      const items = deepSearchForArray(payload, parseOverdueItemsValue);
+      setOverdueItems(items && items.length > 0 ? items : []);
+    } catch (error) {
+      console.error('Unable to fetch overdue items', error);
+      setOverdueItems([]);
+    }
+  }, []);
+
   const loadAllData = useCallback(
     async (project: string) => {
-      await Promise.all([loadTaskSummary(project), loadSprintData(project)]);
+      await Promise.all([
+        loadTaskSummary(project),
+        loadSprintData(project),
+        loadBlockedItems(project),
+        loadOverdueItems(project),
+      ]);
     },
-    [loadTaskSummary, loadSprintData],
+    [loadTaskSummary, loadSprintData, loadBlockedItems, loadOverdueItems],
   );
 
   useEffect(() => {
@@ -765,8 +989,26 @@ const ProjectDashboard = (): JSX.Element => {
         </section>
         <section className="project-dashboard__content">
           <div className="project-dashboard__main">
-            <SprintStatus segments={sprintSegments} />
-            <TaskPriorityOverview priorities={priorityOverview} />
+            <div className="project-dashboard__grid project-dashboard__grid--two">
+              <SprintStatus segments={sprintSegments} />
+              <TaskPriorityOverview priorities={priorityOverview} />
+            </div>
+            <div className="project-dashboard__grid project-dashboard__grid--two">
+              <IssuePanel
+                title="Blocked Items"
+                icon="🚫"
+                items={blockedItems}
+                emptyMessage="No blocked work at the moment."
+                tone="danger"
+              />
+              <IssuePanel
+                title="Overdue Items"
+                icon="⏰"
+                items={overdueItems}
+                emptyMessage="Everything is on schedule."
+                tone="warning"
+              />
+            </div>
             <TeamProgress teams={teamProgress} />
           </div>
           <AssistantPanel />

@@ -13,6 +13,8 @@ export const API_ENDPOINTS = {
   taskSummary: `${API_SERVER}/project-dashboard/task-summary`,
   sprintTasks: `${API_SERVER}/project-dashboard/tasks-of-sprint?sprint=20`,
   ask: `${API_SERVER}/ask`,
+  blockedItems: `${API_SERVER}/blocked-item`,
+  overdueItems: `${API_SERVER}/overdue-item`,
 } as const;
 
 export default API_SERVER;

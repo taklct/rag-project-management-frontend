@@ -1,12 +1,4 @@
-import {
-  type CSSProperties,
-  type FC,
-  type FocusEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { type FC, useMemo } from 'react';
 import '../css/TaskPriorityOverview.css';
 
 export type PriorityKey = 'done' | 'inProgress' | 'todo';
@@ -18,166 +10,109 @@ export type Priority = {
   counts: PriorityCounts;
 };
 
-const segmentColors: Record<PriorityKey, string> = {
-  done: 'var(--color-success)',
-  inProgress: 'var(--color-info)',
-  todo: 'var(--color-warning)',
-};
+const chartSegments: Array<{ key: PriorityKey; label: string; color: string }> = [
+  { key: 'todo', label: 'To-Do', color: '#FBBF24' },
+  { key: 'inProgress', label: 'In Progress', color: '#60A5FA' },
+  { key: 'done', label: 'Done', color: '#6EE7B7' },
+];
 
-const segmentLabels: Record<PriorityKey, string> = {
-  done: 'Done',
-  inProgress: 'In Progress',
-  todo: 'To-Do',
-};
+const legendSegments: Array<{ key: PriorityKey; label: string; color: string }> = [
+  { key: 'done', label: 'Done', color: '#6EE7B7' },
+  { key: 'inProgress', label: 'In Progress', color: '#60A5FA' },
+  { key: 'todo', label: 'To-Do', color: '#FBBF24' },
+];
 
 export interface TaskPriorityOverviewProps {
   priorities: Priority[];
 }
 
-const TaskPriorityOverview: FC<TaskPriorityOverviewProps> = ({ priorities }) => {
-  const [isAnimated, setIsAnimated] = useState(false);
-  const [hoveredTarget, setHoveredTarget] = useState<{
+type PreparedPriority = {
+  label: string;
+  total: number;
+  segments: Array<{
+    key: PriorityKey;
+    value: number;
+    ratio: number;
+    color: string;
     label: string;
-    key: PriorityKey | 'all';
-  } | null>(null);
+  }>;
+};
 
-  useEffect(() => {
-    setIsAnimated(false);
-    const frame = requestAnimationFrame(() => {
-      setIsAnimated(true);
-    });
+const TaskPriorityOverview: FC<TaskPriorityOverviewProps> = ({ priorities }) => {
+  const preparedPriorities = useMemo<PreparedPriority[]>(() => {
+    return priorities.map((priority) => {
+      const total = Math.max(0, priority.counts.done + priority.counts.inProgress + priority.counts.todo);
 
-    return () => {
-      cancelAnimationFrame(frame);
-    };
-  }, [priorities]);
+      const segments = chartSegments.map(({ key, label, color }) => {
+        const value = Math.max(0, priority.counts[key]);
+        const ratio = total > 0 ? value / total : 0;
 
-  const priorityAnimations = useMemo(() => {
-    return priorities.map((priority, columnIndex) => {
-      const total = priority.counts.done + priority.counts.inProgress + priority.counts.todo;
-      const hasWork = total > 0;
-      const denominator = hasWork ? total : 1;
-      const segments = (Object.keys(priority.counts) as PriorityKey[]).map((key, index) => {
-        const rawValue = priority.counts[key];
-        const ratio = hasWork ? Math.max(rawValue / denominator, 0) : 0;
-        const segmentStyle: CSSProperties & Record<string, string | number> = {
-          ['--bar-fill' as string]: ratio,
-          ['--bar-delay' as string]: `${columnIndex * 0.1 + index * 0.05}s`,
-          backgroundColor: segmentColors[key],
-        };
-
-        return { key, value: rawValue, style: segmentStyle };
+        return { key, value, ratio, color, label };
       });
 
-      return { ...priority, segments, total };
+      return { label: priority.label, total, segments };
     });
   }, [priorities]);
 
-  const handleColumnEnter = useCallback((label: string) => {
-    setHoveredTarget({ label, key: 'all' });
-  }, []);
+  const maxTotal = useMemo(() => {
+    return preparedPriorities.reduce((max, priority) => (priority.total > max ? priority.total : max), 0);
+  }, [preparedPriorities]);
 
-  const handleColumnLeave = useCallback(() => {
-    setHoveredTarget(null);
-  }, []);
-
-  const handleBarEnter = useCallback((label: string, key: PriorityKey) => {
-    setHoveredTarget({ label, key });
-  }, []);
-
-  const handleColumnBlur = useCallback(
-    (event: FocusEvent<HTMLDivElement>) => {
-      if (event.currentTarget.contains(event.relatedTarget as Node | null)) {
-        return;
-      }
-
-      handleColumnLeave();
-    },
-    [handleColumnLeave],
-  );
-
-  const hasPriorities = priorityAnimations.length > 0;
+  const safeMaxTotal = maxTotal > 0 ? maxTotal : 1;
 
   return (
-    <section className="panel">
-      <header className="panel__header">
+    <section className="panel task-priority-overview">
+      <header className="task-priority-overview__header">
         <h2>Task Priority Overview</h2>
+        <div className="task-priority-overview__legend" aria-label="Task status legend">
+          {legendSegments.map((segment) => (
+            <div key={segment.key} className="task-priority-overview__legend-item">
+              <span className="legend-dot" style={{ backgroundColor: segment.color }} />
+              <span>{segment.label}</span>
+            </div>
+          ))}
+        </div>
       </header>
-      {hasPriorities ? (
-        <div className="task-priority">
-          <div className="task-priority__chart" role="img" aria-label="Task priority bar chart">
-            {priorityAnimations.map((priority) => {
-              const isColumnActive = hoveredTarget?.label === priority.label;
-              const activeSegment =
-                isColumnActive && hoveredTarget?.key !== 'all'
-                ? priority.segments.find((segment) => segment.key === hoveredTarget.key)
-                : undefined;
-
-            const displayValue = activeSegment?.value ?? priority.total;
-            const displayLabel = activeSegment
-              ? segmentLabels[activeSegment.key]
-              : 'Total Tasks';
+      {preparedPriorities.length > 0 ? (
+        <div
+          className="task-priority-overview__chart"
+          role="img"
+          aria-label="Stacked column chart showing tasks by priority and status"
+        >
+          {preparedPriorities.map((priority) => {
+            const columnHeight = priority.total / safeMaxTotal;
 
             return (
-              <div
-                key={priority.label}
-                className={`task-priority__column ${isColumnActive ? 'is-hovered' : ''}`}
-                onMouseEnter={() => handleColumnEnter(priority.label)}
-                onMouseLeave={handleColumnLeave}
-                onFocus={() => handleColumnEnter(priority.label)}
-                onBlur={handleColumnBlur}
-                tabIndex={0}
-                role="group"
-                aria-label={`${priority.label} priority tasks`}
-              >
-                <div className={`task-priority__tooltip ${isColumnActive ? 'is-visible' : ''}`}>
-                  <span className="task-priority__tooltip-value">{displayValue}</span>
-                  <span className="task-priority__tooltip-label">{displayLabel}</span>
-                </div>
-                <div className="task-priority__bars">
-                  {priority.segments.map((segment) => {
-                    const isActive =
-                      isColumnActive && hoveredTarget?.key === segment.key;
-
-                    return (
+              <div key={priority.label} className="task-priority-overview__column" aria-label={`${priority.label} priority`}> 
+                <div className="task-priority-overview__track" aria-hidden={priority.total === 0}>
+                  <div
+                    className="task-priority-overview__stack"
+                    style={{ height: `${Math.max(columnHeight, 0) * 100}%` }}
+                  >
+                    {priority.segments.map((segment) => (
                       <div
                         key={segment.key}
-                        className={`task-priority__bar task-priority__bar--${segment.key} ${
-                          isAnimated ? 'is-animated' : ''
-                        } ${isActive ? 'is-active' : ''}`.trim()}
-                        style={segment.style}
-                        role="button"
-                        tabIndex={0}
-                        aria-pressed={isActive}
-                        aria-label={`${segmentLabels[segment.key]} tasks: ${segment.value}`}
-                        onMouseEnter={() => handleBarEnter(priority.label, segment.key)}
-                        onMouseLeave={() => handleColumnEnter(priority.label)}
-                        onFocus={() => handleBarEnter(priority.label, segment.key)}
-                        onBlur={() => handleColumnEnter(priority.label)}
+                        className="task-priority-overview__segment"
+                        style={{
+                          backgroundColor: segment.color,
+                          flexBasis: `${segment.ratio * 100}%`,
+                        }}
+                        aria-hidden={segment.value === 0}
                       >
                         <span className="visually-hidden">
-                          {segment.value} {segment.key} tasks
+                          {segment.value} {segment.label} tasks in {priority.label} priority
                         </span>
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
                 </div>
-                <p className="task-priority__label">{priority.label}</p>
+                <div className="task-priority-overview__total" aria-hidden={priority.total === 0}>
+                  {priority.total > 0 ? `${priority.total} tasks` : ''}
+                </div>
+                <p className="task-priority-overview__label">{priority.label}</p>
               </div>
             );
-            })}
-          </div>
-          <div className="task-priority__legend">
-            <p>
-              <span className="legend-dot" style={{ backgroundColor: segmentColors.done }} /> Done
-            </p>
-            <p>
-              <span className="legend-dot" style={{ backgroundColor: segmentColors.inProgress }} /> In Progress
-            </p>
-            <p>
-              <span className="legend-dot" style={{ backgroundColor: segmentColors.todo }} /> To-Do
-            </p>
-          </div>
+          })}
         </div>
       ) : (
         <p className="panel__empty">No priority data available.</p>

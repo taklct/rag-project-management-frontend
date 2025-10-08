@@ -74,6 +74,28 @@ const clampPercentage = (value: number): number => {
 
 const toSafeInteger = (value: number): number => Math.max(0, Math.round(value));
 
+const fallbackSegmentPalette = [
+  '#6366F1',
+  '#8B5CF6',
+  '#EC4899',
+  '#F97316',
+  '#14B8A6',
+  '#22D3EE',
+  '#F43F5E',
+  '#0EA5E9',
+  '#A3E635',
+  '#F59E0B',
+];
+
+const hashLabel = (label: string): number => {
+  let hash = 0;
+  for (let index = 0; index < label.length; index += 1) {
+    hash = (hash << 5) - hash + label.charCodeAt(index);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+};
+
 const inferSprintColor = (label: string): string => {
   const normalised = label.toLowerCase();
   if (/(done|complete|closed|finished|resolved)/.test(normalised)) {
@@ -88,7 +110,12 @@ const inferSprintColor = (label: string): string => {
     return 'var(--color-status-todo)';
   }
 
-  return 'var(--color-status-other)';
+  if (label.trim().length === 0) {
+    return fallbackSegmentPalette[0];
+  }
+
+  const paletteIndex = hashLabel(normalised) % fallbackSegmentPalette.length;
+  return fallbackSegmentPalette[paletteIndex];
 };
 
 type NormalisedStatusKey = 'done' | 'inProgress' | 'todo' | 'other';

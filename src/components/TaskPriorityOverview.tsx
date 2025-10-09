@@ -115,9 +115,6 @@ const TaskPriorityOverview: FC<TaskPriorityOverviewProps> = ({ priorities }) => 
                               aria-hidden="true"
                             />
                           </div>
-                          <span className="task-priority-overview__cluster-label" aria-hidden="true">
-                            {segment.label}
-                          </span>
                         </div>
                       );
                     })}

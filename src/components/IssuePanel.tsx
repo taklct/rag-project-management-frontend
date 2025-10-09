@@ -46,6 +46,9 @@ const IssuePanel: FC<IssuePanelProps> = ({ title, icon, items, emptyMessage, ton
                 <span className="issue-panel__indicator-icon">!</span>
               </div>
               <div className="issue-panel__content">
+                <span className="issue-panel__item-id" aria-label={`Task number ${item.id}`}>
+                  {item.id}
+                </span>
                 <p className="issue-panel__item-title">{item.title}</p>
                 {item.description ? (
                   <p className="issue-panel__item-description">{item.description}</p>

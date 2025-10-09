@@ -32,7 +32,6 @@ type PreparedPriority = {
   segments: Array<{
     key: PriorityKey;
     value: number;
-    ratio: number;
     color: string;
     label: string;
   }>;
@@ -45,20 +44,26 @@ const TaskPriorityOverview: FC<TaskPriorityOverviewProps> = ({ priorities }) => 
 
       const segments = chartSegments.map(({ key, label, color }) => {
         const value = Math.max(0, priority.counts[key]);
-        const ratio = total > 0 ? value / total : 0;
 
-        return { key, value, ratio, color, label };
+        return { key, value, color, label };
       });
 
       return { label: priority.label, total, segments };
     });
   }, [priorities]);
 
-  const maxTotal = useMemo(() => {
-    return preparedPriorities.reduce((max, priority) => (priority.total > max ? priority.total : max), 0);
+  const maxSegmentValue = useMemo(() => {
+    return preparedPriorities.reduce((maxValue, priority) => {
+      const priorityMax = priority.segments.reduce(
+        (segmentMax, segment) => (segment.value > segmentMax ? segment.value : segmentMax),
+        0,
+      );
+
+      return priorityMax > maxValue ? priorityMax : maxValue;
+    }, 0);
   }, [preparedPriorities]);
 
-  const safeMaxTotal = maxTotal > 0 ? maxTotal : 1;
+  const safeMaxSegmentValue = maxSegmentValue > 0 ? maxSegmentValue : 1;
 
   return (
     <section className="panel task-priority-overview">
@@ -77,10 +82,9 @@ const TaskPriorityOverview: FC<TaskPriorityOverviewProps> = ({ priorities }) => 
         <div
           className="task-priority-overview__chart"
           role="img"
-          aria-label="Stacked column chart showing tasks by priority and status"
+          aria-label="Clustered column chart showing tasks by priority and status"
         >
           {preparedPriorities.map((priority) => {
-            const columnHeight = priority.total / safeMaxTotal;
             const totalLabel = priority.total === 1 ? 'task' : 'tasks';
 
             return (
@@ -90,25 +94,33 @@ const TaskPriorityOverview: FC<TaskPriorityOverviewProps> = ({ priorities }) => 
                   <span className="task-priority-overview__column-total-suffix"> {totalLabel}</span>
                 </span>
                 <div className="task-priority-overview__column-bar" aria-hidden={priority.total === 0}>
-                  <div
-                    className="task-priority-overview__stack"
-                    style={{ height: `${Math.max(columnHeight, 0) * 100}%` }}
-                  >
-                    {priority.segments.map((segment) => (
-                      <div
-                        key={segment.key}
-                        className={`task-priority-overview__segment task-priority-overview__segment--${segment.key}`}
-                        style={{
-                          backgroundColor: segment.color,
-                          flexBasis: `${segment.ratio * 100}%`,
-                        }}
-                        aria-hidden={segment.value === 0}
-                      >
-                        <span className="visually-hidden">
-                          {segment.value} {segment.label} tasks in {priority.label} priority
-                        </span>
-                      </div>
-                    ))}
+                  <div className="task-priority-overview__cluster" role="group" aria-label={`${priority.label} priority task statuses`}>
+                    {priority.segments.map((segment) => {
+                      const heightRatio = segment.value / safeMaxSegmentValue;
+                      const srLabel = `${segment.value} ${segment.label} tasks in ${priority.label} priority`;
+
+                      return (
+                        <div key={segment.key} className="task-priority-overview__cluster-column">
+                          <span className="visually-hidden">{srLabel}</span>
+                          <span className="task-priority-overview__cluster-value" aria-hidden="true">
+                            {segment.value}
+                          </span>
+                          <div className="task-priority-overview__cluster-bar-wrapper">
+                            <div
+                              className={`task-priority-overview__cluster-bar task-priority-overview__cluster-bar--${segment.key}`}
+                              style={{
+                                height: `${Math.max(heightRatio, 0) * 100}%`,
+                                backgroundColor: segment.color,
+                              }}
+                              aria-hidden="true"
+                            />
+                          </div>
+                          <span className="task-priority-overview__cluster-label" aria-hidden="true">
+                            {segment.label}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
                 <p className="task-priority-overview__label">{priority.label}</p>

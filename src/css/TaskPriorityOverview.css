@@ -169,16 +169,6 @@
   color: #1a202c;
 }
 
-.task-priority-overview__cluster-label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #6b7280;
-  text-align: center;
-  line-height: 1.2;
-}
-
 .task-priority-overview__label {
   margin: 0;
   font-size: 0.95rem;

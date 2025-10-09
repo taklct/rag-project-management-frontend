@@ -1,4 +1,4 @@
-import { type FC, useMemo } from 'react';
+import { type FC, useMemo, useState } from 'react';
 import '../css/TaskPriorityOverview.css';
 
 export type PriorityKey = 'done' | 'inProgress' | 'todo';
@@ -65,6 +65,40 @@ const TaskPriorityOverview: FC<TaskPriorityOverviewProps> = ({ priorities }) => 
 
   const safeMaxSegmentValue = maxSegmentValue > 0 ? maxSegmentValue : 1;
 
+  const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
+  const [pinnedLabel, setPinnedLabel] = useState<string | null>(null);
+
+  const activePriorityLabel = pinnedLabel ?? hoveredLabel;
+
+  const activePriority = useMemo<PreparedPriority | null>(() => {
+    if (!activePriorityLabel) {
+      return null;
+    }
+
+    return preparedPriorities.find((priority) => priority.label === activePriorityLabel) ?? null;
+  }, [activePriorityLabel, preparedPriorities]);
+
+  const handlePointerEnter = (label: string) => {
+    setHoveredLabel(label);
+  };
+
+  const handlePointerLeave = (label: string) => {
+    setHoveredLabel((current) => (current === label ? null : current));
+  };
+
+  const handleTogglePriority = (label: string) => {
+    setPinnedLabel((currentPinned) => {
+      const nextPinned = currentPinned === label ? null : label;
+      setHoveredLabel(label);
+      return nextPinned;
+    });
+  };
+
+  const handleClearAll = () => {
+    setPinnedLabel(null);
+    setHoveredLabel(null);
+  };
+
   return (
     <section className="panel task-priority-overview">
       <header className="task-priority-overview__header">
@@ -85,14 +119,40 @@ const TaskPriorityOverview: FC<TaskPriorityOverviewProps> = ({ priorities }) => 
           aria-label="Clustered column chart showing tasks by priority and status"
         >
           {preparedPriorities.map((priority) => {
-            const totalLabel = priority.total === 1 ? 'task' : 'tasks';
+            const isPinned = pinnedLabel === priority.label;
+            const isHovered = hoveredLabel === priority.label;
+            const isActive = pinnedLabel ? isPinned : isHovered;
+            const columnClasses = ['task-priority-overview__column'];
+
+            if (isActive) {
+              columnClasses.push('task-priority-overview__column--active');
+            } else if (isHovered) {
+              columnClasses.push('task-priority-overview__column--hovered');
+            }
 
             return (
-              <div key={priority.label} className="task-priority-overview__column" aria-label={`${priority.label} priority`}>
-                <span className="task-priority-overview__column-total">
-                  {priority.total}
-                  <span className="task-priority-overview__column-total-suffix"> {totalLabel}</span>
-                </span>
+              <div
+                key={priority.label}
+                className={columnClasses.join(' ')}
+                aria-label={`${priority.label} priority`}
+                role="button"
+                aria-pressed={isPinned}
+                tabIndex={0}
+                onClick={() => handleTogglePriority(priority.label)}
+                onMouseEnter={() => handlePointerEnter(priority.label)}
+                onMouseLeave={() => handlePointerLeave(priority.label)}
+                onFocus={() => handlePointerEnter(priority.label)}
+                onBlur={() => handlePointerLeave(priority.label)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    handleTogglePriority(priority.label);
+                  }
+                  if (event.key === 'Escape') {
+                    handleClearAll();
+                  }
+                }}
+              >
                 <div className="task-priority-overview__column-bar" aria-hidden={priority.total === 0}>
                   <div className="task-priority-overview__cluster" role="group" aria-label={`${priority.label} priority task statuses`}>
                     {priority.segments.map((segment) => {
@@ -128,6 +188,40 @@ const TaskPriorityOverview: FC<TaskPriorityOverviewProps> = ({ priorities }) => 
       ) : (
         <p className="panel__empty">No priority data available.</p>
       )}
+      <div className="task-priority-overview__details" aria-live="polite">
+        {activePriority ? (
+          <>
+            <h3>
+              {activePriority.label} priority breakdown
+              {pinnedLabel === activePriority.label ? (
+                <span className="task-priority-overview__details-pin" aria-label="Pinned priority">
+                  pinned
+                </span>
+              ) : null}
+            </h3>
+            <ul>
+              {activePriority.segments.map((segment) => {
+                const percentage = activePriority.total
+                  ? Math.round((segment.value / activePriority.total) * 100)
+                  : 0;
+                const taskLabel = segment.value === 1 ? 'task' : 'tasks';
+
+                return (
+                  <li key={segment.key}>
+                    <span className="task-priority-overview__details-label">{segment.label}</span>
+                    <span className="task-priority-overview__details-value">
+                      {segment.value} {taskLabel}
+                      <span className="task-priority-overview__details-percentage"> ({percentage}%)</span>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        ) : (
+          <p>Hover, focus, or press enter on a column to view a detailed breakdown. Press Escape to clear.</p>
+        )}
+      </div>
     </section>
   );
 };

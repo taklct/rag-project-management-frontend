@@ -11,15 +11,15 @@ export type Priority = {
 };
 
 const chartSegments: Array<{ key: PriorityKey; label: string; color: string }> = [
-  { key: 'todo', label: 'To-Do', color: '#FBBF24' },
-  { key: 'inProgress', label: 'In Progress', color: '#60A5FA' },
-  { key: 'done', label: 'Done', color: '#6EE7B7' },
+  { key: 'todo', label: 'To-Do', color: '#FCCA77' },
+  { key: 'inProgress', label: 'In Progress', color: '#4A80FF' },
+  { key: 'done', label: 'Done', color: '#98D8AA' },
 ];
 
 const legendSegments: Array<{ key: PriorityKey; label: string; color: string }> = [
-  { key: 'done', label: 'Done', color: '#6EE7B7' },
-  { key: 'inProgress', label: 'In Progress', color: '#60A5FA' },
-  { key: 'todo', label: 'To-Do', color: '#FBBF24' },
+  { key: 'done', label: 'Done', color: '#98D8AA' },
+  { key: 'inProgress', label: 'In Progress', color: '#4A80FF' },
+  { key: 'todo', label: 'To-Do', color: '#FCCA77' },
 ];
 
 export interface TaskPriorityOverviewProps {
@@ -81,10 +81,15 @@ const TaskPriorityOverview: FC<TaskPriorityOverviewProps> = ({ priorities }) => 
         >
           {preparedPriorities.map((priority) => {
             const columnHeight = priority.total / safeMaxTotal;
+            const totalLabel = priority.total === 1 ? 'task' : 'tasks';
 
             return (
-              <div key={priority.label} className="task-priority-overview__column" aria-label={`${priority.label} priority`}> 
-                <div className="task-priority-overview__track" aria-hidden={priority.total === 0}>
+              <div key={priority.label} className="task-priority-overview__column" aria-label={`${priority.label} priority`}>
+                <span className="task-priority-overview__column-total">
+                  {priority.total}
+                  <span className="task-priority-overview__column-total-suffix"> {totalLabel}</span>
+                </span>
+                <div className="task-priority-overview__column-bar" aria-hidden={priority.total === 0}>
                   <div
                     className="task-priority-overview__stack"
                     style={{ height: `${Math.max(columnHeight, 0) * 100}%` }}
@@ -92,7 +97,7 @@ const TaskPriorityOverview: FC<TaskPriorityOverviewProps> = ({ priorities }) => 
                     {priority.segments.map((segment) => (
                       <div
                         key={segment.key}
-                        className="task-priority-overview__segment"
+                        className={`task-priority-overview__segment task-priority-overview__segment--${segment.key}`}
                         style={{
                           backgroundColor: segment.color,
                           flexBasis: `${segment.ratio * 100}%`,
@@ -105,9 +110,6 @@ const TaskPriorityOverview: FC<TaskPriorityOverviewProps> = ({ priorities }) => 
                       </div>
                     ))}
                   </div>
-                </div>
-                <div className="task-priority-overview__total" aria-hidden={priority.total === 0}>
-                  {priority.total > 0 ? `${priority.total} tasks` : ''}
                 </div>
                 <p className="task-priority-overview__label">{priority.label}</p>
               </div>

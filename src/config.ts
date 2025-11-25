@@ -15,7 +15,7 @@ const baseUrl =
 export const API_SERVER = normaliseBaseUrl(baseUrl);
 
 export const API_ENDPOINTS = {
-  build: `${API_SERVER}/build`,
+  build: `${API_SERVER}/project-dashboard/jira/export-issues?project=M1`,
   taskSummary: `${API_SERVER}/project-dashboard/task-summary`,
   sprintTasks: `${API_SERVER}/project-dashboard/tasks-of-sprint`,
   ask: `${API_SERVER}/ask`,
